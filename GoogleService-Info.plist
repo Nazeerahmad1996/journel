@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>CLIENT_ID</key>
+	<string>533567482896-iul30b2dt5sdc3q23vrbq2vke3bla2ls.apps.googleusercontent.com</string>
+	<key>REVERSED_CLIENT_ID</key>
+	<string>com.googleusercontent.apps.533567482896-iul30b2dt5sdc3q23vrbq2vke3bla2ls</string>
+	<key>API_KEY</key>
+	<string>AIzaSyAYE930Yy6GI-JYEAa8q6Qp60WW96iXxBc</string>
+	<key>GCM_SENDER_ID</key>
+	<string>533567482896</string>
+	<key>PLIST_VERSION</key>
+	<string>1</string>
+	<key>BUNDLE_ID</key>
+	<string>example.expo.googlesignin</string>
+	<key>PROJECT_ID</key>
+	<string>auth-226ca</string>
+	<key>STORAGE_BUCKET</key>
+	<string>auth-226ca.appspot.com</string>
+	<key>IS_ADS_ENABLED</key>
+	<false></false>
+	<key>IS_ANALYTICS_ENABLED</key>
+	<false></false>
+	<key>IS_APPINVITE_ENABLED</key>
+	<true></true>
+	<key>IS_GCM_ENABLED</key>
+	<true></true>
+	<key>IS_SIGNIN_ENABLED</key>
+	<true></true>
+	<key>GOOGLE_APP_ID</key>
+	<string>1:533567482896:ios:be5fa28ce362a78a56ee95</string>
+	<key>DATABASE_URL</key>
+	<string>https://auth-226ca.firebaseio.com</string>
+</dict>
+</plist>

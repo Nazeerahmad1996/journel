@@ -1,0 +1,53 @@
+{
+  "expo": {
+    "name": "Journal",
+    "slug": "Journal",
+    "description": "In this Project we're going to explore the React Native Login Screen Tutorial, and I have written a depth guide with examples in my Blog reactntativemaster.com, for future references. You can check the full Article here. https://reactnativemaster.com/react-native-login-screen-tutorial",
+    "privacy": "public",
+    "scheme": "http",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.jpeg",
+    "splash": {
+      "image": "./assets/RUMBLECAPITAL.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#7F171B"
+    },
+    "updates": {
+      "fallbackToCacheTimeout": 0
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "web": {
+      "config": {
+        "firebase": {
+          "apiKey": "AIzaSyDsGTBoroTtTuH7OQoV8e_ZPtpCYrmhqR4",
+          "authDomain": "tuition-ac131.firebaseapp.com",
+          "databaseURL": "https://tuition-ac131.firebaseio.com",
+          "projectId": "tuition-ac131",
+          "storageBucket": "tuition-ac131.appspot.com",
+          "messagingSenderId": "857474040308",
+          "appId": "1:857474040308:web:ac2424f978362502"
+        }
+      }
+    },
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.black.journal",
+      "config": {
+        "googleSignIn": {
+          "reservedClientId": "com.googleusercontent.apps.533567482896-0g3rrka3klb3r1clrjgpe94vetcv5bfa"
+        }
+      }
+    },
+    "android": {
+      "package": "com.black.journal"
+    }
+  }
+}
