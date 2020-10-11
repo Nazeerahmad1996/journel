@@ -10,6 +10,7 @@ import '@firebase/firestore'
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
+import Timer from './timer';
 export default class HomeScreen extends React.Component {
 
     state = {
@@ -17,7 +18,8 @@ export default class HomeScreen extends React.Component {
         name: '',
         Post: false,
         Description: '',
-        messages: []
+        messages: [],
+        postQuota: true,
     }
 
     onShare = async () => {
@@ -162,6 +164,93 @@ export default class HomeScreen extends React.Component {
             })
     }
 
+
+
+    canPost = async () => {
+        var user = firebase.auth().currentUser.uid;
+        let userName;
+        var docRef = firebase.firestore().collection("Users").doc(user);
+        let can_post = true;
+        let time = null;
+
+        await docRef.get().then(function (doc) {
+            if (doc.exists) {
+                userName = doc.data().username
+                if (doc.data().lastPosts) {
+                    if (doc.data().lastPosts.length === 3) {
+                        if (((new Date().getTime() - doc.data().lastPosts[2]) / (1000 * 3600 * 24)) < 1) {
+                            if ((((new Date().getTime() - doc.data().lastPosts[0]) / (1000 * 3600 * 24)) < 1)) {
+                                can_post = false;
+                                let date = new Date();
+                                time = new Date(doc.data().lastPosts[0]).setDate(date.getDate() + 1);
+
+                                time = time - new Date().getTime();
+                                time = time / 1000;
+                                // console.log(time);
+
+                            }
+                        }
+                    }
+                }
+                console.log("Document data:", doc.data().username);
+            } else {
+                console.log("5No such document!");
+            }
+        }).catch(function (error) {
+            console.log("Error getting document:", error);
+        });
+
+        if (can_post) {
+            this.setState({ Post: true });
+        }
+        else {
+            this.setState({ postQuota: true, time: time });
+        }
+    }
+
+    renderModalPostQuota() {
+        return (
+            <View style={[styles.modalView, { backgroundColor: '#000' }]}>
+                {/* <Text style={{ textAlign: 'center', fontSize: 22, fontWeight: 'bold', color: '#FFF', marginBottom: 25 }}>{this.state.time}</Text>  */}
+                <Timer callback={this.props} time={this.state.time} />
+
+                <Text style={{ marginHorizontal: 20, fontWeight: 'bold', color: '#FFF', textAlign: 'center', marginTop: 10 }}>You've reached your quota of <Text style={{ color: "#7F171B", fontSize: 18 }}>3</Text> posts per <Text style={{ color: "#7F171B", fontSize: 18 }}>24</Text> hours. Please wait until you unlock next post.</Text>
+
+                <TouchableOpacity style={{ alignSelf: 'flex-end', marginRight: 10, marginTop: 15 }} onPress={() => this.setState({ postQuota: false })}>
+                    <MaterialCommunityIcons name="close-circle" color="#fff" size={25} />
+                </TouchableOpacity>
+
+            </View >
+        )
+    }
+
+
+    LastPost(user, date) {
+        firebase.firestore().collection("Users").doc(user).get().then((doc) => {
+            if (doc.exists) {
+                let userData = doc.data();
+                if (userData.lastPosts) {
+                    if (userData.lastPosts.length < 3) {
+                        userData.lastPosts.push(date)
+                    }
+                    else {
+                        userData.lastPosts[0] = userData.lastPosts[1];
+                        userData.lastPosts[1] = userData.lastPosts[2];
+                        userData.lastPosts[2] = date;
+                    }
+                }
+
+                firebase.firestore().collection("Users").doc(user).update({
+                    lastPosts: userData.lastPosts ? userData.lastPosts : [date]
+                })
+
+
+            }
+        }).catch(function (error) {
+            console.log("2Error getting document:", error);
+        });
+    }
+
     Post = async () => {
         var user = firebase.auth().currentUser.uid;
 
@@ -183,7 +272,8 @@ export default class HomeScreen extends React.Component {
         var nodeName = 'Post';
 
         if (this.state.Description != '') {
-
+            let date = new Date().getTime();
+            let that = this;
             var newPostRef = firebase.database().ref(nodeName).push({
                 User: user,
                 Name: userName,
@@ -201,38 +291,11 @@ export default class HomeScreen extends React.Component {
                 firebase.database().ref(nodeName).child(Key).update({
                     Node: Key
                 })
-                let score = 0
-                let that = this;
-                firebase.firestore().collection("Users").doc(user).get().then(function (doc) {
-                    if (doc.exists) {
-                        console.log('worl: ', doc.data().Score)
-                        firebase.firestore().collection("Users").doc(user).update({
-                            Score: doc.data().Score + 10
-                        })
-                    } else {
-                        firebase.firestore().collection("Users").doc("gorilla").get().then(function (doc) {
-                            if (doc.exists) {
-                                console.log('wor5: ', doc.data().Score)
-                                firebase.firestore().collection("Users").doc("gorilla").update({
-                                    Score: doc.data().Score + 10
-                                })
-                            } else {
-                                console.log("6No such document!");
-                            }
-                        }).catch(function (error) {
-                            console.log("2Error getting document:", error);
-                        });
-                        console.log("1No such document!");
-                    }
-                }).catch(function (error) {
-                    console.log("2Error getting document:", error);
-                });
+                this.LastPost(user, date);
 
             }).catch((error) => {
                 //error callback
-                Alert.alert(
-                    'Upload Not Successfully' + error
-                )
+                console.log('Upload Not Successfully' + error);
             })
         }
 
@@ -270,7 +333,7 @@ export default class HomeScreen extends React.Component {
             // <ImageBackground source={require('../assets/background.png')} style={styles.container}>
             <View style={styles.container}>
                 <Modal
-                    isVisible={this.state.Post}
+                    isVisible={this.state.Post || this.state.postQuota}
                     backdropColor="rgba(0,0,0,0.1)"
                     animationIn="zoomInDown"
                     animationOut="zoomOutUp"
@@ -280,7 +343,7 @@ export default class HomeScreen extends React.Component {
                     backdropTransitionOutTiming={600}
                     onBackdropPress={() => this.setState({ Post: false })}
                     style={{ overflow: 'scroll' }}>
-                    {this.renderModalContent()}
+                    {this.state.postQuota ? this.renderModalPostQuota() : this.renderModalContent()}
                 </Modal>
                 <View style={{ paddingTop: StatusBar.currentHeight, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff' }}>
                     <TouchableOpacity
@@ -315,7 +378,7 @@ export default class HomeScreen extends React.Component {
                         <Text style={{ fontSize: 16, marginTop: 10 }}>Logout</Text>
                     </TouchableOpacity> */}
                 </View >
-                <TouchableOpacity onPress={() => this.setState({ Post: true })} style={{ position: 'absolute', bottom: 20, right: 20 }}>
+                <TouchableOpacity onPress={() => this.canPost()} style={{ position: 'absolute', bottom: 20, right: 20 }}>
                     <Ionicons name='md-add-circle' color='grey' size={60} />
                 </TouchableOpacity>
             </View>
