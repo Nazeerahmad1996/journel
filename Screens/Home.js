@@ -19,7 +19,7 @@ export default class HomeScreen extends React.Component {
         Post: false,
         Description: '',
         messages: [],
-        postQuota: true,
+        postQuota: false,
     }
 
     onShare = async () => {

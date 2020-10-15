@@ -12,7 +12,7 @@
     ],
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.jpeg",
+    "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/RUMBLECAPITAL.png",
       "resizeMode": "contain",
@@ -39,7 +39,7 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.black.journal",
+      "bundleIdentifier": "com.rumble.journal",
       "config": {
         "googleSignIn": {
           "reservedClientId": "com.googleusercontent.apps.533567482896-0g3rrka3klb3r1clrjgpe94vetcv5bfa"
@@ -47,7 +47,10 @@
       }
     },
     "android": {
-      "package": "com.black.journal"
+      "package": "com.rumble.journal",
+      "versionCode": 2,
+      "useNextNotificationsApi": true,
+      "googleServicesFile": "./google-services.json"
     }
   }
 }

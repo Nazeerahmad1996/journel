@@ -15,8 +15,11 @@ const windowHeight = Dimensions.get('window').height;
 const IOS_CLIENT_ID =
     "857474040308-a4hqd3abovaq7ti54db05lh4onmn9nki.apps.googleusercontent.com";
 const ANDROID_CLIENT_ID =
-    "857474040308-ot40mdie4tiv53vadbft7sj7fgnd0fbf.apps.googleusercontent.com";
+    "857474040308-33n9vktheee6ggpua9c8abnl8koleipj.apps.googleusercontent.com";
 
+const Stand_Alone_Build = "857474040308-5p19fk7fj87r21ab3vhb0cnkackls1dt.apps.googleusercontent.com";
+const Stand_Alone_Build_IOS = "533567482896-5ca12bj339sdkesjlg501bmkdrs68oii.apps.googleusercontent.com";
+webClientId = "857474040308-7u9227cl0vqdjqmir3pnndmho9eabnvb.apps.googleusercontent.com"
 // const recaptchaVerifier = React.useRef(null);
 
 export default class App extends React.Component {
@@ -67,6 +70,9 @@ export default class App extends React.Component {
             const result = await Google.logInAsync({
                 iosClientId: IOS_CLIENT_ID,
                 androidClientId: ANDROID_CLIENT_ID,
+                androidStandaloneAppClientId: Stand_Alone_Build,
+                iosStandaloneAppClientId: Stand_Alone_Build_IOS,
+                webClientId: webClientId,
                 scopes: ["profile", "email"]
             });
             console.log(result.user)
@@ -217,7 +223,7 @@ export default class App extends React.Component {
         return (
             <View style={styles.container}>
 
-                <Image style={{height:150, width:150, borderRadius:100}} source={require('../assets/icon.jpeg')} />
+                <Image style={{ height: 150, width: 150, borderRadius: 100 }} source={require('../assets/icon.png')} />
 
                 <View>
                     <View style={{ flexDirection: 'row', alignItems: 'center', margin: 20 }}>
@@ -303,8 +309,8 @@ const styles = StyleSheet.create({
         alignItems: "center",
         justifyContent: "center",
         flexDirection: 'row',
-        padding:5,
-        marginTop:10
+        padding: 5,
+        marginTop: 10
     },
     loginText: {
         color: "white",
