@@ -19,7 +19,7 @@ const ANDROID_CLIENT_ID =
 
 const Stand_Alone_Build = "857474040308-5p19fk7fj87r21ab3vhb0cnkackls1dt.apps.googleusercontent.com";
 const Stand_Alone_Build_IOS = "533567482896-5ca12bj339sdkesjlg501bmkdrs68oii.apps.googleusercontent.com";
-webClientId = "857474040308-7u9227cl0vqdjqmir3pnndmho9eabnvb.apps.googleusercontent.com"
+const webClientId = "857474040308-7u9227cl0vqdjqmir3pnndmho9eabnvb.apps.googleusercontent.com"
 // const recaptchaVerifier = React.useRef(null);
 
 export default class App extends React.Component {

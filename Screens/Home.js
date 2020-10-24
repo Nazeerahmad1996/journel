@@ -11,6 +11,8 @@ const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Timer from './timer';
+import * as ImagePicker from 'expo-image-picker';
+import StarRating from 'react-native-star-rating';
 export default class HomeScreen extends React.Component {
 
     state = {
@@ -20,6 +22,7 @@ export default class HomeScreen extends React.Component {
         Description: '',
         messages: [],
         postQuota: false,
+        starCount: 3.5
     }
 
     onShare = async () => {
@@ -42,19 +45,78 @@ export default class HomeScreen extends React.Component {
         }
     };
 
+    _pickImage = async () => {
+        let result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.All,
+            allowsEditing: true,
+            aspect: [4, 3],
+            quality: 0.3,
+        });
+
+        const myRef = firebase.database().ref();
+        const Key = myRef.push();
+        if (!result.cancelled) {
+            this.setState({ ImageLoading: true })
+        }
+        const blob = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function (e) {
+                reject(new TypeError("Network request failed"));
+            };
+            xhr.responseType = "blob";
+            xhr.open("GET", result.uri, true);
+            xhr.send(null);
+        });
+
+
+        const reference = firebase.storage().ref().child('images/' + Key);
+
+        const snapshot = await reference.put(blob);
+        const myUrl = await snapshot.ref.getDownloadURL();
+        if (myUrl != null || myUrl != '') {
+            this.setState({ ImageLoaded: true })
+        }
+        this.setState({ Image: myUrl })
+
+
+    };
+
+    onStarRatingPress(rating) {
+        this.setState({
+            starCount: rating
+        });
+    }
+
 
     renderModalContent = () => (
         <View style={styles.modalView}>
 
-            <Text style={{ textAlign: 'center', fontSize: 22, fontWeight: 'bold', marginBottom: 25 }}>Post</Text>
-
+            <Text style={{ textAlign: 'center', fontSize: 22, fontWeight: 'bold', marginBottom: 35 }}>Post</Text>
             <View style={styles.inputView} >
                 <TextInput
                     style={styles.inputText}
                     placeholder="Description..."
-                    placeholderTextColor="#003f5c"
+                    placeholderTextColor="#fff"
                     onChangeText={text => this.setState({ Description: text })} />
+                <TouchableOpacity onPress={this._pickImage} style={{ backgroundColor: '#fff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 40, marginLeft: 10 }}>
+                    <Ionicons name="md-image" color="#773838" size={27} />
+                </TouchableOpacity>
             </View>
+
+            <StarRating
+                disabled={false}
+                maxStars={5}
+                rating={this.state.starCount}
+                selectedStar={(rating) => this.onStarRatingPress(rating)}
+                fullStarColor={'red'}
+            />
+
+            <Text>How's your day?</Text>
+
+            <View style={{ marginBottom: 50 }} />
 
             <TouchableOpacity onPress={() => this.Post()} style={styles.forgotBtn}>
                 <Text style={styles.loginText}>Post</Text>
@@ -69,6 +131,12 @@ export default class HomeScreen extends React.Component {
 
 
     async componentDidMount() {
+        if (Platform.OS !== 'web') {
+            const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
+            if (status !== 'granted') {
+                alert('Sorry, we need camera roll permissions to make this work!');
+            }
+        }
         let uid = firebase.auth().currentUser.uid
         firebase
             .database()
@@ -90,15 +158,14 @@ export default class HomeScreen extends React.Component {
         firebase.auth().onAuthStateChanged((user) => {
             if (user != null) {
                 this.setState({ logged: true })
-                if (user.email != null) {
-                    this.setState({ name: user.email })
-                } else {
+                if (user.displayName != null) {
                     this.setState({ name: user.displayName })
+                } else {
+                    this.setState({ name: user.email })
                 }
             }
         })
     }
-
     Delete = async (item) => {
         await firebase.database().ref('Post').child(item.Node).remove(function (error) {
             if (!error) {
@@ -109,50 +176,6 @@ export default class HomeScreen extends React.Component {
             }
         })
     }
-
-    // Like = async (item) => {
-
-    //     var user = firebase.auth().currentUser.uid;
-
-    //     let userName;
-    //     var docRef = firebase.firestore().collection("Users").doc(user);
-
-    //     await docRef.get().then(function (doc) {
-    //         if (doc.exists) {
-    //             userName = doc.data().username
-    //         } else {
-    //             // doc.data() will be undefined in this case
-    //             userName = 'Anonymous'
-    //             console.log("No such document!");
-    //         }
-    //     }).catch(function (error) {
-    //         console.log("Error getting document:", error);
-    //     });
-    //     var count;
-
-    //     var newPostRef = await firebase.database().ref('Post').child(item.Node).child("Likes/" + user).set({
-    //         uid: user,
-    //         Name: userName,
-    //     }).then((data) => {
-    //         firebase
-    //             .database()
-    //             .ref('Post').child(item.Node).child("Likes")
-    //             .once("value", snapshot => {
-    //                 count = snapshot.numChildren();
-    //                 firebase.database().ref('Post').child(item.Node).update({
-    //                     LikeCount: count,
-    //                 })
-    //                 this.setState({
-    //                     CountOfLikes: count,
-    //                 });
-    //             });
-    //     }).catch((error) => {
-    //         //error callback
-    //         Alert.alert(
-    //             'Upload Not Successfully' + error
-    //         )
-    //     });
-    // }
 
     SignOut = () => {
         firebase.auth().signOut()
@@ -271,12 +294,14 @@ export default class HomeScreen extends React.Component {
         });
         var nodeName = 'Post';
 
-        if (this.state.Description != '') {
+        if (this.state.Description != '', this.state.Image) {
             let date = new Date().getTime();
             let that = this;
             var newPostRef = firebase.database().ref(nodeName).push({
                 User: user,
+                Image: this.state.Image,
                 Name: userName,
+                StarRating: this.state.starCount,
                 Description: this.state.Description,
                 Date: new Date().toDateString(),
                 Node: "null",
@@ -306,19 +331,24 @@ export default class HomeScreen extends React.Component {
 
     renderRow = ({ item, index }) => {
         return (
-            <View style={{ marginHorizontal: 20, marginVertical: 10, backgroundColor: '#fff', padding: 20, borderRadius: 5 }}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ flex: 1 }}>{item.Description}</Text>
-                    <TouchableOpacity style={{ marginLeft: 5 }} onPress={() => this.Delete(item)}>
-                        <Ionicons name='ios-trash' color='grey' size={25} />
-                    </TouchableOpacity>
-                </View>
-                <Text style={{ color: 'grey', textAlign: 'right', fontSize: 13, marginVertical: 5 }}>-{item.Name}</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <View style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}>
-
+            <View style={{ marginHorizontal: 20, marginVertical: 10, backgroundColor: '#fff', padding: 2, borderRadius: 5 }}>
+                <Image source={{ uri: item.Image }}
+                    style={{ height: 200, width: '100%' }}
+                />
+                <View style={{ padding: 10 }}>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <Text style={{ flex: 1 }}>{item.Description}</Text>
+                        <TouchableOpacity style={{ marginLeft: 5 }} onPress={() => this.Delete(item)}>
+                            <Ionicons name='ios-trash' color='grey' size={25} />
+                        </TouchableOpacity>
                     </View>
-                    <Text style={{ color: 'grey', textAlign: 'right', fontSize: 13 }}>{item.Date}</Text>
+                    <Text style={{ color: 'grey', textAlign: 'right', fontSize: 13, marginVertical: 5 }}>-{item.Name}</Text>
+                    <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                        <View style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}>
+
+                        </View>
+                        <Text style={{ color: 'grey', textAlign: 'right', fontSize: 13 }}>{item.Date}</Text>
+                    </View>
                 </View>
             </View>
         )
@@ -327,10 +357,8 @@ export default class HomeScreen extends React.Component {
     render() {
         var userId = firebase.auth().currentUser.uid
         let redirectUrl = Linking.makeUrl('', { uid: userId });
-        // let redirectUrl = Linking.makeUrl()
         let { path, queryParams } = Linking.parse(redirectUrl);
         return (
-            // <ImageBackground source={require('../assets/background.png')} style={styles.container}>
             <View style={styles.container}>
                 <Modal
                     isVisible={this.state.Post || this.state.postQuota}
@@ -351,19 +379,8 @@ export default class HomeScreen extends React.Component {
                         style={{ padding: 8, width: 60, height: 50, justifyContent: 'center', alignItems: 'center' }}>
                         <Ionicons name='md-menu' color='#7F171B' size={35} />
                     </TouchableOpacity>
-                    <Text style={{ flex: 1, textAlign: 'center', fontSize: 20, fontWeight: 'bold' }}>Home</Text>
-                    {/* <TouchableOpacity
-                        onPress={() => this.props.navigation.navigate('LeaderBoard')}
-                        style={{ padding: 8, backgroundColor: '#fb5b5a', width: 60, height: 50, justifyContent: 'center', alignItems: 'center' }}>
-                        <Image style={{ height: 30, width: 30 }} source={require('../assets/scoreboard.png')} />
-                    </TouchableOpacity> */}
+                    <Text style={{ flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold', marginLeft: -28 }}>Welcome {this.state.name}</Text>
                 </View>
-                {/* <View style={{ backgroundColor: '#000', padding: 10, flexDirection: 'row', alignItems: 'center' }}>
-                    <Text style={{ color: '#fff', fontSize: 18, textAlign: 'center', flex: 1 }}>Reason to vote</Text>
-                    <TouchableOpacity onPress={this.onShare}>
-                        <Ionicons name='md-share' color='#fff' size={30} />
-                    </TouchableOpacity>
-                </View> */}
                 <View style={{ flex: 1 }}>
                     <FlatList
                         data={this.state.messages}
@@ -373,16 +390,11 @@ export default class HomeScreen extends React.Component {
                         keyExtractor={(item, index) => index.toString()}
 
                     />
-                    {/* <Text style={{ fontSize: 20 }}>Welcome {this.state.name}</Text>
-                    <TouchableOpacity onPress={this.SignOut} style={styles.Row}>
-                        <Text style={{ fontSize: 16, marginTop: 10 }}>Logout</Text>
-                    </TouchableOpacity> */}
                 </View >
                 <TouchableOpacity onPress={() => this.canPost()} style={{ position: 'absolute', bottom: 20, right: 20 }}>
                     <Ionicons name='md-add-circle' color='grey' size={60} />
                 </TouchableOpacity>
             </View>
-            // </ImageBackground >
         )
     }
 }
@@ -415,16 +427,19 @@ const styles = StyleSheet.create({
     },
     inputView: {
         width: "80%",
-        backgroundColor: "#465881",
+        backgroundColor: "#fb5b5a",
         borderRadius: 25,
         height: 50,
         marginBottom: 20,
         justifyContent: "center",
-        padding: 20
+        padding: 10,
+        flexDirection: 'row',
+        alignItems: 'center'
     },
     inputText: {
         height: 50,
-        color: "white"
+        color: "white",
+        flex: 1
     },
     forgotBtn: {
         width: "80%",

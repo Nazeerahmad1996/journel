@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
-import { Text, View, Button, StyleSheet, TouchableOpacity, Clipboard, Alert } from 'react-native';
+import { Text, View, Button, StyleSheet, TouchableOpacity, Clipboard, Alert, ScrollView, Image } from 'react-native';
 import * as firebase from 'firebase';
 import * as Linking from 'expo-linking';
-
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import '@firebase/firestore'
 export default function CustomDrawer(props) {
     const [name, setname] = useState('');
-    const [score, setScore] = useState('');
+    const [post, setPost] = useState('');
 
     DeleteAccount = () => {
         Alert.alert(
@@ -47,15 +47,6 @@ export default function CustomDrawer(props) {
     useEffect(() => {
         firebase.auth().onAuthStateChanged((user) => {
             if (user != null) {
-                var userId = firebase.auth().currentUser.uid
-                const db = firebase.firestore();
-                db.collection("Users").doc(userId)
-                    .onSnapshot(function (doc) {
-                        if (doc.data()) {
-                            setScore(doc.data().Score)
-                            console.log("Current data: ", doc.data());
-                        }
-                    });
                 if (user.email != null) {
                     setname(user.email)
                 } else {
@@ -63,44 +54,116 @@ export default function CustomDrawer(props) {
                 }
             }
         })
+        let uid = firebase.auth().currentUser.uid
+        var ref = firebase
+            .database()
+            .ref('Post').orderByChild('User').equalTo(uid);
+        ref.once("value")
+            .then(function (snapshot) {
+                var a = snapshot.numChildren(); // 1 ("name")
+                setPost(a)
+            });
     }, []);
-    var userId = firebase.auth().currentUser.uid
-    let redirectUrl = Linking.makeUrl('', { uid: userId });
-    // let redirectUrl = Linking.makeUrl()
-    let { path, queryParams } = Linking.parse(redirectUrl);
     return (
+        // <View style={styles.container}>
+        //     <View style={{ backgroundColor: '#7F171B', height: 200, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
+        //         <Text style={{ color: '#fff', fontWeight: 'bold' }}>{name}</Text>
+        //     </View>
+
+        //     <View style={{ marginHorizontal: 20, flex: 1 }}>
+        //         <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => props.navigation.navigate('Home')}>
+        //             <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6D7B8D' }}>Home</Text>
+        //         </TouchableOpacity>
+
+        //         <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => DeleteAccount()}>
+        //             <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6D7B8D' }}>Delete Account</Text>
+        //         </TouchableOpacity>
+
+        //     </View>
+
+        //     <TouchableOpacity onPress={() => SignOut()} style={styles.Row}>
+        //         <Text style={{ fontSize: 16, textAlign: 'center', padding: 10, color: '#fff' }}>Logout</Text>
+        //     </TouchableOpacity>
+
+
+        // </View>
         <View style={styles.container}>
-            <View style={{ backgroundColor: '#7F171B', height: 200, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
-                <Text style={{ color: '#fff', fontWeight: 'bold' }}>{name}</Text>
-                {/* <Text style={{ color: '#fff', fontWeight: 'bold' }}>Score: {score}</Text>
-                <TouchableOpacity onPress={() => {
-                    Clipboard.setString(redirectUrl)
-                    Alert.alert('copied')
-                }} style={{ marginTop: 20 }}>
-                    <Text style={{ textAlign: 'center', color: '#fff' }}>{redirectUrl}</Text>
-                </TouchableOpacity> */}
-            </View>
+            <ScrollView>
+                <View style={styles.Header}>
+                    {/* <Image
+                        source={
+                            user.avatar
+                                ? { uri: user.avatar }
+                                : require('../assets/images/profile.jpg')
+                        }
+                        style={{ height: 70, width: 70, borderRadius: 50, marginLeft: 5 }}
+                    /> */}
+                    <Text style={styles.UserName}>{name}</Text>
+                    {/* <Text style={styles.email}>Email</Text> */}
+                    <View style={styles.Rows}>
+                        <View
+                            style={{ flexDirection: 'row', alignItems: 'center', flex: 1 }}>
+                            <Text style={styles.numbers}>{post}</Text>
+                            <Text style={styles.email}>Posts</Text>
+                        </View>
+                    </View>
+                </View>
 
-            <View style={{ marginHorizontal: 20, flex: 1 }}>
-                <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => props.navigation.navigate('Home')}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6D7B8D' }}>Home</Text>
-                </TouchableOpacity>
+                <View style={styles.body}>
+                    <View
+                        style={[
+                            styles.Middlecontainer,
+                            { marginTop: 10, marginBottom: 30, flex: 1 },
+                        ]}>
+                        <TouchableOpacity
+                            onPress={() => props.navigation.navigate('Home')}
+                            style={styles.Row}>
+                            <View style={styles.IconContainer}>
+                                <MaterialCommunityIcons name="pen" size={28} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.rowTitleName}>Journal</Text>
+                            </View>
+                        </TouchableOpacity>
 
-                {/* <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => props.navigation.navigate('LeaderBoard')}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6D7B8D' }}>Leaderboard</Text>
-                </TouchableOpacity> */}
+                        <TouchableOpacity
+                            onPress={() => props.navigation.navigate('analytics')}
+                            style={styles.Row}>
+                            <View style={styles.IconContainer}>
+                                <MaterialCommunityIcons name="chart-bar" size={28} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.rowTitleName}>Analytics</Text>
+                            </View>
+                        </TouchableOpacity>
 
-                <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => DeleteAccount()}>
-                    <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6D7B8D' }}>Delete Account</Text>
-                </TouchableOpacity>
+                        <TouchableOpacity
+                            onPress={() => DeleteAccount()}
+                            style={styles.Row}>
+                            <View style={styles.IconContainer}>
+                                <MaterialCommunityIcons name="trash-can-outline" size={28} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.rowTitleName}>Delete Account</Text>
+                            </View>
+                        </TouchableOpacity>
+                    </View>
 
-            </View>
+                    <View style={{ width: 6, backgroundColor: "#F3534A" }} />
+                </View>
 
-            <TouchableOpacity onPress={() => SignOut()} style={styles.Row}>
-                <Text style={{ fontSize: 16, textAlign: 'center', padding: 10, color: '#fff' }}>Logout</Text>
-            </TouchableOpacity>
+                <View style={styles.footer}>
 
-
+                    <TouchableOpacity onPress={() => SignOut()} style={[styles.Row, { marginVertical: 8 }]}>
+                        <View style={styles.IconContainer}>
+                            <Ionicons name="md-log-out" size={28} />
+                        </View>
+                        <View style={{ flex: 1 }}>
+                            <Text style={styles.rowTitleName}>Logout</Text>
+                        </View>
+                    </TouchableOpacity>
+                </View>
+            </ScrollView>
         </View>
     );
 };
@@ -110,17 +173,61 @@ const styles = StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',
+        marginTop: 20,
     },
-    Title: {
-        fontSize: 26,
+
+    Header: {
+        padding: 20,
+        paddingVertical: 40
+    },
+    numbers: {
         fontWeight: 'bold',
-        paddingHorizontal: 20
+        fontSize: 18,
+        marginRight: 10,
+    },
+    UserName: {
+        fontWeight: 'bold',
+        fontSize: 18,
+        marginTop: 5,
+    },
+    email: {
+        fontSize: 13.5,
+        fontWeight: '300',
+    },
+    Rows: { flexDirection: 'row', marginTop: 10 },
+    body: {
+        flexDirection: 'row',
+        borderTopWidth: 0.5,
+        borderBottomWidth: 0.5,
+    },
+    footer: {
+        paddingHorizontal: 20,
+    },
+    Middlecontainer: {
+        flex: 1,
+        alignItems: 'center',
+        marginTop: '10%',
+    },
+    IconContainer: {
+        width: 45,
+        height: 45,
+        justifyContent: 'center',
+        alignItems: 'center',
+        backgroundColor: '#DFE7F5',
+        borderRadius: 40,
+        marginRight: 15,
     },
     Row: {
-        width: '100%',
-        backgroundColor: '#7F171B',
-
-    }
-
-
+        marginVertical: 16,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        width: '88%',
+    },
+    rowTitleName: {
+        fontWeight: 'bold',
+        color: '#042C5C',
+        fontSize: 18,
+    },
 });
+

@@ -36,10 +36,6 @@ export default class App extends React.Component {
       if (doc.exists) {
         userName = doc.data().username
         console.log("Document data:", doc.data().username);
-      } else {
-        userName = 'Anonymous'
-        // doc.data() will be undefined in this case
-        console.log("5No such document!");
       }
     }).catch(function (error) {
       console.log("Error getting document:", error);
@@ -47,11 +43,12 @@ export default class App extends React.Component {
 
     const identifier = await Notifications.scheduleNotificationAsync({
       content: {
-        title: "Hi " + userName + " it's time to journal? How are you today?",
+        title: "Hi " + userName,
+        body: "it's time to journal? How are you today?",
       },
       trigger: {
-        hour: 18,
-        minute: 52,
+        hour: 21,
+        minute: 0,
         repeats: true
       },
     });
