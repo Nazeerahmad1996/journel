@@ -14,10 +14,10 @@ function NavStack() {
     const [isLoggedIn, setisLoggedIn] = useState('');
     useEffect(() => {
         firebase.auth().onAuthStateChanged((user) => {
-            if (user.email != null) {
+            if (user) {
                 setisLoggedIn(true)
             } else {
-                setname(false)
+                setisLoggedIn(false)
             }
         })
     }, []);
