@@ -22,7 +22,8 @@ export default class HomeScreen extends React.Component {
         Description: '',
         messages: [],
         postQuota: false,
-        starCount: 3.5
+        starCount: 3.5,
+        Image: ''
     }
 
     onShare = async () => {
@@ -294,7 +295,7 @@ export default class HomeScreen extends React.Component {
         });
         var nodeName = 'Post';
 
-        if (this.state.Description != '', this.state.Image) {
+        if (this.state.Description != '') {
             let date = new Date().getTime();
             let that = this;
             var newPostRef = firebase.database().ref(nodeName).push({
@@ -332,9 +333,9 @@ export default class HomeScreen extends React.Component {
     renderRow = ({ item, index }) => {
         return (
             <View style={{ marginHorizontal: 20, marginVertical: 10, backgroundColor: '#fff', padding: 2, borderRadius: 5 }}>
-                <Image source={{ uri: item.Image }}
-                    style={{ height: 200, width: '100%' }}
-                />
+                {item.Image ? <Image source={{ uri: item.Image }}
+                    style={{ height: item.Image ? 200 : 0, width: '100%' }}
+                />: null}
                 <View style={{ padding: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ flex: 1 }}>{item.Description}</Text>
@@ -371,7 +372,7 @@ export default class HomeScreen extends React.Component {
                     backdropTransitionOutTiming={600}
                     onBackdropPress={() => this.setState({ Post: false })}
                     style={{ overflow: 'scroll' }}>
-                    {this.state.postQuota ? this.renderModalPostQuota() : this.renderModalContent()}
+                    {this.renderModalContent()}
                 </Modal>
                 <View style={{ paddingTop: StatusBar.currentHeight, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff' }}>
                     <TouchableOpacity

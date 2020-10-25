@@ -47,10 +47,10 @@ export default function CustomDrawer(props) {
     useEffect(() => {
         firebase.auth().onAuthStateChanged((user) => {
             if (user != null) {
-                if (user.email != null) {
-                    setname(user.email)
-                } else {
+                if (user.displayName != null) {
                     setname(user.displayName)
+                } else {
+                    setname(user.email)
                 }
             }
         })
@@ -65,28 +65,6 @@ export default function CustomDrawer(props) {
             });
     }, []);
     return (
-        // <View style={styles.container}>
-        //     <View style={{ backgroundColor: '#7F171B', height: 200, justifyContent: 'center', alignItems: 'center', marginBottom: 20 }}>
-        //         <Text style={{ color: '#fff', fontWeight: 'bold' }}>{name}</Text>
-        //     </View>
-
-        //     <View style={{ marginHorizontal: 20, flex: 1 }}>
-        //         <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => props.navigation.navigate('Home')}>
-        //             <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6D7B8D' }}>Home</Text>
-        //         </TouchableOpacity>
-
-        //         <TouchableOpacity style={{ marginBottom: 10 }} onPress={() => DeleteAccount()}>
-        //             <Text style={{ fontSize: 20, fontWeight: 'bold', color: '#6D7B8D' }}>Delete Account</Text>
-        //         </TouchableOpacity>
-
-        //     </View>
-
-        //     <TouchableOpacity onPress={() => SignOut()} style={styles.Row}>
-        //         <Text style={{ fontSize: 16, textAlign: 'center', padding: 10, color: '#fff' }}>Logout</Text>
-        //     </TouchableOpacity>
-
-
-        // </View>
         <View style={styles.container}>
             <ScrollView>
                 <View style={styles.Header}>
