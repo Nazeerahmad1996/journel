@@ -225,7 +225,7 @@ export default class HomeScreen extends React.Component {
         });
 
         if (can_post) {
-            this.setState({ Post: true });
+            this.setState({ postQuota: true });
         }
         else {
             this.setState({ postQuota: true, time: time });
