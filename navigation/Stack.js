@@ -24,8 +24,7 @@ function NavStack() {
     const Stack = createStackNavigator();
     return (
         <Stack.Navigator
-            headerMode={false}
-            initialRouteName="Register">
+            headerMode={false}>
             {isLoggedIn ? (
                 <>
                     <Stack.Screen name="DrawerNavigation" component={DrawerNavigation} />

@@ -36,7 +36,6 @@ export default function CustomDrawer(props) {
     SignOut = () => {
         firebase.auth().signOut()
             .then(() => {
-                props.navigation.navigate('Register')
             })
             .catch(error => {
 
