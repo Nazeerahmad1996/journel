@@ -123,7 +123,7 @@ export default class HomeScreen extends React.Component {
                 <Text style={styles.loginText}>Post</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => this.setState({ Post: false })}>
+            <TouchableOpacity onPress={() => this.setState({ postQuota: false })}>
                 <Text style={{ fontSize: 17, textAlign: 'center' }}>Cancel</Text>
             </TouchableOpacity>
 
@@ -309,7 +309,7 @@ export default class HomeScreen extends React.Component {
                 Likes: 0,
             }).then((data) => {
                 this.setState({ Description: '' })
-                this.setState({ Post: false })
+                this.setState({ postQuota: false })
                 Alert.alert(
                     'Upload Successfully'
                 )
@@ -335,7 +335,7 @@ export default class HomeScreen extends React.Component {
             <View style={{ marginHorizontal: 20, marginVertical: 10, backgroundColor: '#fff', padding: 2, borderRadius: 5 }}>
                 {item.Image ? <Image source={{ uri: item.Image }}
                     style={{ height: item.Image ? 200 : 0, width: '100%' }}
-                />: null}
+                /> : null}
                 <View style={{ padding: 10 }}>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <Text style={{ flex: 1 }}>{item.Description}</Text>
@@ -362,7 +362,7 @@ export default class HomeScreen extends React.Component {
         return (
             <View style={styles.container}>
                 <Modal
-                    isVisible={this.state.Post || this.state.postQuota}
+                    isVisible={this.state.postQuota}
                     backdropColor="rgba(0,0,0,0.1)"
                     animationIn="zoomInDown"
                     animationOut="zoomOutUp"
@@ -370,9 +370,10 @@ export default class HomeScreen extends React.Component {
                     animationOutTiming={600}
                     backdropTransitionInTiming={600}
                     backdropTransitionOutTiming={600}
-                    onBackdropPress={() => this.setState({ Post: false })}
+                    onBackdropPress={() => this.setState({ postQuota: false })}
                     style={{ overflow: 'scroll' }}>
-                    {this.renderModalContent()}
+                    {this.state.postQuota ? this.renderModalPostQuota() : this.renderModalContent()}
+                    {/* {this.renderModalContent()} */}
                 </Modal>
                 <View style={{ paddingTop: StatusBar.currentHeight, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff' }}>
                     <TouchableOpacity
