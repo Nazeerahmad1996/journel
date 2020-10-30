@@ -123,7 +123,7 @@ export default class HomeScreen extends React.Component {
                 <Text style={styles.loginText}>Post</Text>
             </TouchableOpacity>
 
-            <TouchableOpacity onPress={() => this.setState({ postQuota: false })}>
+            <TouchableOpacity onPress={() => this.setState({ Post: false })}>
                 <Text style={{ fontSize: 17, textAlign: 'center' }}>Cancel</Text>
             </TouchableOpacity>
 
@@ -132,6 +132,61 @@ export default class HomeScreen extends React.Component {
 
 
     async componentDidMount() {
+        let userName = ''
+        var user = firebase.auth().currentUser.uid;
+        var docRef = firebase.firestore().collection("Users").doc(user);
+
+        await docRef.get().then(function (doc) {
+            if (doc.exists) {
+                userName = doc.data().username
+                console.log("Document data:", doc.data().username);
+            }
+        }).catch(function (error) {
+            console.log("Error getting document:", error);
+        });
+
+        const identifier = await Notifications.scheduleNotificationAsync({
+            content: {
+                title: "Hi " + userName,
+                body: "it's time to journal? How are you today?",
+            },
+            trigger: {
+                hour: 18,
+                minute: 52,
+                repeats: true
+            },
+        });
+        await Notifications.cancelScheduledNotificationAsync(identifier)
+
+        // LocalNotifications.cancelAllScheduledNotificationsAsync().then(() => {
+        //     LocalNotifications.scheduleNotificationAsync(
+        //         Platform.OS === 'android' ?
+        //             {
+        //                 content: {
+        //                     title: "Hi " + userName + "it's time to journal? How are you today?",
+        //                 },
+        //                 trigger: {
+        //                     hour: 0,
+        //                     minute: 1,
+        //                     repeats: true
+        //                 },
+        //             }
+        //             :
+        //             {
+        //                 content: {
+        //                     title: "Hi " + userName + "it's time to journal? How are you today?"
+        //                 },
+        //                 trigger: {
+        //                     type: 'calendar',
+        //                     dateComponents: {
+        //                         hour: 0,
+        //                         minute: 0,
+        //                     },
+        //                     repeats: true
+        //                 },
+        //             }
+        //     )
+        // })
         if (Platform.OS !== 'web') {
             const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
             if (status !== 'granted') {
@@ -225,7 +280,7 @@ export default class HomeScreen extends React.Component {
         });
 
         if (can_post) {
-            this.setState({ postQuota: true });
+            this.setState({ Post: true });
         }
         else {
             this.setState({ postQuota: true, time: time });
@@ -309,7 +364,7 @@ export default class HomeScreen extends React.Component {
                 Likes: 0,
             }).then((data) => {
                 this.setState({ Description: '' })
-                this.setState({ postQuota: false })
+                this.setState({ Post: false })
                 Alert.alert(
                     'Upload Successfully'
                 )
@@ -362,7 +417,7 @@ export default class HomeScreen extends React.Component {
         return (
             <View style={styles.container}>
                 <Modal
-                    isVisible={this.state.postQuota}
+                    isVisible={this.state.Post || this.state.postQuota}
                     backdropColor="rgba(0,0,0,0.1)"
                     animationIn="zoomInDown"
                     animationOut="zoomOutUp"
@@ -370,7 +425,7 @@ export default class HomeScreen extends React.Component {
                     animationOutTiming={600}
                     backdropTransitionInTiming={600}
                     backdropTransitionOutTiming={600}
-                    onBackdropPress={() => this.setState({ postQuota: false })}
+                    onBackdropPress={() => this.setState({ Post: false, postQuota: false })}
                     style={{ overflow: 'scroll' }}>
                     {this.state.postQuota ? this.renderModalPostQuota() : this.renderModalContent()}
                     {/* {this.renderModalContent()} */}

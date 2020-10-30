@@ -4,7 +4,7 @@ import * as firebase from 'firebase';
 import '@firebase/firestore'
 import StackNavigator from './navigation/Stack'
 import * as Font from 'expo-font';
-import * as Notifications from 'expo-notifications';
+// import * as Notifications from 'expo-notifications';
 var config = {
   apiKey: "AIzaSyDsGTBoroTtTuH7OQoV8e_ZPtpCYrmhqR4",
   authDomain: "tuition-ac131.firebaseapp.com",
