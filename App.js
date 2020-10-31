@@ -4,7 +4,7 @@ import * as firebase from 'firebase';
 import '@firebase/firestore'
 import StackNavigator from './navigation/Stack'
 import * as Font from 'expo-font';
-// import * as Notifications from 'expo-notifications';
+import * as Notifications from 'expo-notifications';
 var config = {
   apiKey: "AIzaSyDsGTBoroTtTuH7OQoV8e_ZPtpCYrmhqR4",
   authDomain: "tuition-ac131.firebaseapp.com",
@@ -26,20 +26,7 @@ export default class App extends React.Component {
   }
 
   async scheduleAndCancel() {
-
-    console.log('Worked');
-    let userName = ''
-    var user = firebase.auth().currentUser.uid;
-    var docRef = firebase.firestore().collection("Users").doc(user);
-
-    await docRef.get().then(function (doc) {
-      if (doc.exists) {
-        userName = doc.data().username
-        console.log("Document data:", doc.data().username);
-      }
-    }).catch(function (error) {
-      console.log("Error getting document:", error);
-    });
+    let userName = firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName : ''
 
     const identifier = await Notifications.scheduleNotificationAsync({
       content: {
@@ -48,7 +35,7 @@ export default class App extends React.Component {
       },
       trigger: {
         hour: 21,
-        minute: 0,
+        minute: 10,
         repeats: true
       },
     });

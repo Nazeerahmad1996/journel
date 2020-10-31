@@ -132,18 +132,27 @@ export default class HomeScreen extends React.Component {
 
 
     async componentDidMount() {
-        let userName = ''
-        var user = firebase.auth().currentUser.uid;
-        var docRef = firebase.firestore().collection("Users").doc(user);
+        let userName = firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName : ''
+        // var user = firebase.auth().currentUser.uid;
+        // var docRef = firebase.firestore().collection("Users").doc(user);
 
-        await docRef.get().then(function (doc) {
-            if (doc.exists) {
-                userName = doc.data().username
-                console.log("Document data:", doc.data().username);
-            }
-        }).catch(function (error) {
-            console.log("Error getting document:", error);
-        });
+        // await docRef.get().then(function (doc) {
+        //     if (doc.exists) {
+        //         userName = doc.data().username
+        //         console.log("Document data:", doc.data().username);
+        //     }
+        // }).catch(function (error) {
+        //     console.log("Error getting document:", error);
+        // });
+        // Notifications.scheduleNotificationAsync({
+        //     content: {
+        //         title: 'Remember to drink water!'
+        //     },
+        //     trigger: {
+        //         seconds: 5,
+        //         repeats: true
+        //     },
+        // });
 
         const identifier = await Notifications.scheduleNotificationAsync({
             content: {
@@ -152,11 +161,11 @@ export default class HomeScreen extends React.Component {
             },
             trigger: {
                 hour: 18,
-                minute: 52,
+                minute: 55,
                 repeats: true
             },
         });
-        await Notifications.cancelScheduledNotificationAsync(identifier)
+        // await Notifications.cancelScheduledNotificationAsync(identifier)
 
         // LocalNotifications.cancelAllScheduledNotificationsAsync().then(() => {
         //     LocalNotifications.scheduleNotificationAsync(
