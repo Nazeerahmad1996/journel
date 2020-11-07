@@ -133,27 +133,7 @@ export default class HomeScreen extends React.Component {
 
     async componentDidMount() {
         let userName = firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName : ''
-        // var user = firebase.auth().currentUser.uid;
-        // var docRef = firebase.firestore().collection("Users").doc(user);
-
-        // await docRef.get().then(function (doc) {
-        //     if (doc.exists) {
-        //         userName = doc.data().username
-        //         console.log("Document data:", doc.data().username);
-        //     }
-        // }).catch(function (error) {
-        //     console.log("Error getting document:", error);
-        // });
-        // Notifications.scheduleNotificationAsync({
-        //     content: {
-        //         title: 'Remember to drink water!'
-        //     },
-        //     trigger: {
-        //         seconds: 5,
-        //         repeats: true
-        //     },
-        // });
-
+        
         const identifier = await Notifications.scheduleNotificationAsync({
             content: {
                 title: "Hi " + userName,
@@ -165,37 +145,6 @@ export default class HomeScreen extends React.Component {
                 repeats: true
             },
         });
-        // await Notifications.cancelScheduledNotificationAsync(identifier)
-
-        // LocalNotifications.cancelAllScheduledNotificationsAsync().then(() => {
-        //     LocalNotifications.scheduleNotificationAsync(
-        //         Platform.OS === 'android' ?
-        //             {
-        //                 content: {
-        //                     title: "Hi " + userName + "it's time to journal? How are you today?",
-        //                 },
-        //                 trigger: {
-        //                     hour: 0,
-        //                     minute: 1,
-        //                     repeats: true
-        //                 },
-        //             }
-        //             :
-        //             {
-        //                 content: {
-        //                     title: "Hi " + userName + "it's time to journal? How are you today?"
-        //                 },
-        //                 trigger: {
-        //                     type: 'calendar',
-        //                     dateComponents: {
-        //                         hour: 0,
-        //                         minute: 0,
-        //                     },
-        //                     repeats: true
-        //                 },
-        //             }
-        //     )
-        // })
         if (Platform.OS !== 'web') {
             const { status } = await ImagePicker.requestCameraRollPermissionsAsync();
             if (status !== 'granted') {
@@ -266,15 +215,17 @@ export default class HomeScreen extends React.Component {
                 userName = doc.data().username
                 if (doc.data().lastPosts) {
                     if (doc.data().lastPosts.length === 3) {
+                        console.log('---lastPost---',doc.data().lastPosts);
                         if (((new Date().getTime() - doc.data().lastPosts[2]) / (1000 * 3600 * 24)) < 1) {
                             if ((((new Date().getTime() - doc.data().lastPosts[0]) / (1000 * 3600 * 24)) < 1)) {
+                                
                                 can_post = false;
                                 let date = new Date();
                                 time = new Date(doc.data().lastPosts[0]).setDate(date.getDate() + 1);
-
+                                console.log('---time---',time);
                                 time = time - new Date().getTime();
                                 time = time / 1000;
-                                // console.log(time);
+                                console.log(time);
 
                             }
                         }

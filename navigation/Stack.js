@@ -27,8 +27,9 @@ function NavStack() {
             headerMode={false}>
             {isLoggedIn ? (
                 <>
-                    <Stack.Screen name="DrawerNavigation" component={DrawerNavigation} />
                     <Stack.Screen name="UsernameUpdate" component={UsernameUpdate} />
+                    <Stack.Screen name="DrawerNavigation" component={DrawerNavigation} />
+
                 </>
             ) : (
                     <>
