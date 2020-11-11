@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Alert, TextInput, Dimensions, StyleSheet, Text, TouchableOpacity, Share, View, ImageBackground, FlatList, StatusBar, Image } from 'react-native';
+import { Alert, TextInput, Dimensions, StyleSheet, Text, TouchableOpacity, Share, View, BackHandler, FlatList, StatusBar, Image } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as Linking from 'expo-linking';
 import Modal from 'react-native-modal';
@@ -131,9 +131,26 @@ export default class HomeScreen extends React.Component {
     );
 
 
+    backAction = () => {
+        Alert.alert('Exit App!', 'Are you sure you want to exit?', [
+            {
+                text: 'Cancel',
+                onPress: () => null,
+                style: 'cancel',
+            },
+            { text: 'YES', onPress: () => BackHandler.exitApp() },
+        ]);
+        return true;
+    };
+
+
     async componentDidMount() {
+
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', this.backAction);
+
+        backHandler.remove();
         let userName = firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName : ''
-        
+
         const identifier = await Notifications.scheduleNotificationAsync({
             content: {
                 title: "Hi " + userName,
@@ -215,14 +232,14 @@ export default class HomeScreen extends React.Component {
                 userName = doc.data().username
                 if (doc.data().lastPosts) {
                     if (doc.data().lastPosts.length === 3) {
-                        console.log('---lastPost---',doc.data().lastPosts);
+                        console.log('---lastPost---', doc.data().lastPosts);
                         if (((new Date().getTime() - doc.data().lastPosts[2]) / (1000 * 3600 * 24)) < 1) {
                             if ((((new Date().getTime() - doc.data().lastPosts[0]) / (1000 * 3600 * 24)) < 1)) {
-                                
+
                                 can_post = false;
                                 let date = new Date();
                                 time = new Date(doc.data().lastPosts[0]).setDate(date.getDate() + 1);
-                                console.log('---time---',time);
+                                console.log('---time---', time);
                                 time = time - new Date().getTime();
                                 time = time / 1000;
                                 console.log(time);
