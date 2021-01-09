@@ -6,13 +6,13 @@ import StackNavigator from './navigation/Stack'
 import * as Font from 'expo-font';
 import * as Notifications from 'expo-notifications';
 var config = {
-  apiKey: "AIzaSyDsGTBoroTtTuH7OQoV8e_ZPtpCYrmhqR4",
-  authDomain: "tuition-ac131.firebaseapp.com",
-  databaseURL: "https://tuition-ac131.firebaseio.com",
-  projectId: "tuition-ac131",
-  storageBucket: "tuition-ac131.appspot.com",
-  messagingSenderId: "857474040308",
-  appId: "1:857474040308:web:ac2424f978362502"
+  "apiKey": "AIzaSyDsGTBoroTtTuH7OQoV8e_ZPtpCYrmhqR4",
+  "authDomain": "tuition-ac131.firebaseapp.com",
+  "databaseURL": "https://tuition-ac131.firebaseio.com",
+  "projectId": "tuition-ac131",
+  "storageBucket": "tuition-ac131.appspot.com",
+  "messagingSenderId": "857474040308",
+  "appId": "1:857474040308:web:ac2424f978362502"
 };
 if (!firebase.apps.length) {
   firebase.initializeApp(config);
@@ -26,7 +26,7 @@ export default class App extends React.Component {
   }
 
   async scheduleAndCancel() {
-    let userName = firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName : ''
+    let userName = firebase.auth().currentUser && firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName : ''
 
     const identifier = await Notifications.scheduleNotificationAsync({
       content: {

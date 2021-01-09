@@ -42,9 +42,10 @@
       "bundleIdentifier": "com.rumble.journal",
       "config": {
         "googleSignIn": {
-          "reservedClientId": "com.googleusercontent.apps.533567482896-0g3rrka3klb3r1clrjgpe94vetcv5bfa"
+          "reservedClientId": "com.googleusercontent.apps.857474040308-5v2ll38gr48bmqpc28ro3omvnbse1nnf"
         }
-      }
+      },
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "package": "com.rumble.journal",

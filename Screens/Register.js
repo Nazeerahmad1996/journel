@@ -8,12 +8,17 @@ import * as Constants from 'expo-constants';
 import { FirebaseRecaptchaVerifierModal } from "expo-firebase-recaptcha";
 import * as Facebook from 'expo-facebook';
 import * as Google from "expo-google-app-auth";
+import * as GoogleSignIn from 'expo-google-sign-in';
+
+import * as AppAuth from 'expo-app-auth';
+
+
 import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import { ScrollView } from 'react-native-gesture-handler';
 const windowWidth = Dimensions.get('window').width;
 const windowHeight = Dimensions.get('window').height;
 const IOS_CLIENT_ID =
-    "857474040308-a4hqd3abovaq7ti54db05lh4onmn9nki.apps.googleusercontent.com";
+    "857474040308-5v2ll38gr48bmqpc28ro3omvnbse1nnf.apps.googleusercontent.com";
 const ANDROID_CLIENT_ID =
     "857474040308-33n9vktheee6ggpua9c8abnl8koleipj.apps.googleusercontent.com";
 
@@ -21,7 +26,9 @@ const Stand_Alone_Build = "857474040308-5p19fk7fj87r21ab3vhb0cnkackls1dt.apps.go
 const Stand_Alone_Build_IOS = "533567482896-5ca12bj339sdkesjlg501bmkdrs68oii.apps.googleusercontent.com";
 const webClientId = "857474040308-7u9227cl0vqdjqmir3pnndmho9eabnvb.apps.googleusercontent.com"
 // const recaptchaVerifier = React.useRef(null);
+const { URLSchemes } = AppAuth;
 
+console.log('-------URL------', URLSchemes);
 export default class App extends React.Component {
     constructor(props) {
         super(props);
@@ -63,11 +70,31 @@ export default class App extends React.Component {
 
 
 
+    initAsync = async () => {
+        await GoogleSignIn.initAsync({
+            // You may ommit the clientId when the firebase `googleServicesFile` is configured
+            clientId: IOS_CLIENT_ID,
+            iosClientId: IOS_CLIENT_ID,
+            androidClientId: ANDROID_CLIENT_ID,
+            androidStandaloneAppClientId: Stand_Alone_Build,
+            iosStandaloneAppClientId: Stand_Alone_Build_IOS,
+            webClientId: webClientId,
+            scopes: ["profile", "email"]
+        });
+        this._syncUserWithStateAsync();
+    };
+
+
+    _syncUserWithStateAsync = async () => {
+        const user = await GoogleSignIn.signInSilentlyAsync();
+        this.setState({ user }, () => console.log('-----user----', user));
+    };
 
 
     GooglelogIn = async () => {
         try {
-            const result = await Google.logInAsync({
+            const { type, accessToken, user, idToken } = await Google.logInAsync({
+                // const result = await Google.logInAsync({
                 iosClientId: IOS_CLIENT_ID,
                 androidClientId: ANDROID_CLIENT_ID,
                 androidStandaloneAppClientId: Stand_Alone_Build,
@@ -75,13 +102,17 @@ export default class App extends React.Component {
                 webClientId: webClientId,
                 scopes: ["profile", "email"]
             });
-            console.log(result.user)
+            console.log(idToken)
 
-            if (result.type === "success") {
-                const credential = firebase.auth.GoogleAuthProvider.credential(result.idToken, result.accessToken);
+            if (type === "success") {
+                let userInfoResponse = await fetch('https://www.googleapis.com/userinfo/v2/me', {
+                    headers: { Authorization: `Bearer ${accessToken}` },
+                });
+                console.log('------data------', userInfoResponse);
+                const credential = firebase.auth.GoogleAuthProvider.credential(idToken, accessToken);
                 firebase
                     .auth()
-                    .signInAndRetrieveDataWithCredential(credential)
+                    .signInWithCredential(credential)
                     .then(res => {
                         const db = firebase.firestore();
                         if (this.state.ScoreUid) {
@@ -120,8 +151,8 @@ export default class App extends React.Component {
                     .catch(error => {
                         console.log("firebase cred err:", error);
                     });
-                console.log("LoginScreen.js.js 21 | ", result.user.givenName);
-                return result.accessToken;
+                // console.log("LoginScreen.js.js 21 | ", result.user.givenName);
+                return accessToken;
             } else {
                 return { cancelled: true };
             }

@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Alert, TextInput, Dimensions, StyleSheet, Text, TouchableOpacity, Share, View, BackHandler, FlatList, StatusBar, Image } from 'react-native';
+import { Alert, TextInput, Dimensions, StyleSheet, Text, TouchableOpacity, Share, View, BackHandler, FlatList, StatusBar, Image, Button } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as Linking from 'expo-linking';
 import Modal from 'react-native-modal';
@@ -13,6 +13,10 @@ import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 import Timer from './timer';
 import * as ImagePicker from 'expo-image-picker';
 import StarRating from 'react-native-star-rating';
+import CheckBox from '@react-native-community/checkbox';
+import { Audio } from 'expo-av';
+
+let uri = null;
 export default class HomeScreen extends React.Component {
 
     state = {
@@ -23,7 +27,9 @@ export default class HomeScreen extends React.Component {
         messages: [],
         postQuota: false,
         starCount: 3.5,
-        Image: ''
+        Image: '',
+        specialPost: false,
+        recording: undefined
     }
 
     onShare = async () => {
@@ -91,6 +97,51 @@ export default class HomeScreen extends React.Component {
         });
     }
 
+    startRecording = async () => {
+        try {
+            console.log('Requesting permissions..');
+            await Audio.requestPermissionsAsync();
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: true,
+                playsInSilentModeIOS: true,
+            });
+            console.log('Starting recording..');
+            const recording = new Audio.Recording();
+            await recording.prepareToRecordAsync(Audio.RECORDING_OPTIONS_PRESET_HIGH_QUALITY);
+            await recording.startAsync();
+            uri = recording;
+            this.setState({ recording });
+            console.log('Recording started');
+        } catch (err) {
+            console.error('Failed to start recording', err);
+        }
+    }
+
+    stopRecording = async () => {
+        console.log('Stopping recording..');
+        await uri.stopAndUnloadAsync();
+        const uri1 = uri.getURI();
+        this.setState({ recording: undefined });
+        const blob = await new Promise((resolve, reject) => {
+            const xhr = new XMLHttpRequest();
+            xhr.onload = function () {
+                resolve(xhr.response);
+            };
+            xhr.onerror = function (e) {
+                reject(new TypeError("Network request failed"));
+            };
+            xhr.responseType = "blob";
+            xhr.open("GET", uri1, true);
+            xhr.send(null);
+        });
+        const myRef = firebase.database().ref();
+        const Key = myRef.push();
+        const reference = firebase.storage().ref().child('audio/' + Key);
+
+        const snapshot = await reference.put(blob);
+        const myUrl = await snapshot.ref.getDownloadURL();
+        this.setState({ audioUrl: myUrl })
+    }
 
     renderModalContent = () => (
         <View style={styles.modalView}>
@@ -107,6 +158,15 @@ export default class HomeScreen extends React.Component {
                 </TouchableOpacity>
             </View>
 
+
+            <View >
+                <TouchableOpacity style={styles.recording} onPress={() => this.state.recording ? this.stopRecording() : this.startRecording()}>
+                    <Text style={{ flex: 1, color: '#fff' }}>{this.state.recording ? 'Stop Recording...' : 'Start Recording...'}</Text>
+                    <Ionicons style={{ marginRight: 15 }} name="ios-mic" color="#fff" size={27} />
+                </TouchableOpacity>
+            </View>
+
+
             <StarRating
                 disabled={false}
                 maxStars={5}
@@ -117,7 +177,14 @@ export default class HomeScreen extends React.Component {
 
             <Text>How's your day?</Text>
 
-            <View style={{ marginBottom: 50 }} />
+            <View style={{ marginVertical: 20, display: 'flex', alignItems: 'center', flexDirection: 'row', justifyContent: 'flex-start' }} >
+                <CheckBox
+                    disabled={false}
+                    value={this.state.specialPost}
+                    onValueChange={(newValue) => this.setState({ specialPost: newValue })}
+                />
+                <Text>Special Post</Text>
+            </View>
 
             <TouchableOpacity onPress={() => this.Post()} style={styles.forgotBtn}>
                 <Text style={styles.loginText}>Post</Text>
@@ -221,64 +288,64 @@ export default class HomeScreen extends React.Component {
 
 
     canPost = async () => {
-        var user = firebase.auth().currentUser.uid;
-        let userName;
-        var docRef = firebase.firestore().collection("Users").doc(user);
-        let can_post = true;
-        let time = null;
+        // var user = firebase.auth().currentUser.uid;
+        // let userName;
+        // var docRef = firebase.firestore().collection("Users").doc(user);
+        // let can_post = true;
+        // let time = null;
 
-        await docRef.get().then(function (doc) {
-            if (doc.exists) {
-                userName = doc.data().username
-                if (doc.data().lastPosts) {
-                    if (doc.data().lastPosts.length === 3) {
-                        console.log('---lastPost---', doc.data().lastPosts);
-                        if (((new Date().getTime() - doc.data().lastPosts[2]) / (1000 * 3600 * 24)) < 1) {
-                            if ((((new Date().getTime() - doc.data().lastPosts[0]) / (1000 * 3600 * 24)) < 1)) {
+        // await docRef.get().then(function (doc) {
+        //     if (doc.exists) {
+        //         userName = doc.data().username
+        //         if (doc.data().lastPosts) {
+        //             if (doc.data().lastPosts.length === 3) {
+        //                 console.log('---lastPost---', doc.data().lastPosts);
+        //                 if (((new Date().getTime() - doc.data().lastPosts[2]) / (1000 * 3600 * 24)) < 1) {
+        //                     if ((((new Date().getTime() - doc.data().lastPosts[0]) / (1000 * 3600 * 24)) < 1)) {
 
-                                can_post = false;
-                                let date = new Date();
-                                time = new Date(doc.data().lastPosts[0]).setDate(date.getDate() + 1);
-                                console.log('---time---', time);
-                                time = time - new Date().getTime();
-                                time = time / 1000;
-                                console.log(time);
+        //                         can_post = false;
+        //                         let date = new Date();
+        //                         time = new Date(doc.data().lastPosts[0]).setDate(date.getDate() + 1);
+        //                         console.log('---time---', time);
+        //                         time = time - new Date().getTime();
+        //                         time = time / 1000;
+        //                         console.log(time);
 
-                            }
-                        }
-                    }
-                }
-                console.log("Document data:", doc.data().username);
-            } else {
-                console.log("5No such document!");
-            }
-        }).catch(function (error) {
-            console.log("Error getting document:", error);
-        });
-
-        if (can_post) {
-            this.setState({ Post: true });
-        }
-        else {
-            this.setState({ postQuota: true, time: time });
-        }
+        //                     }
+        //                 }
+        //             }
+        //         }
+        //         console.log("Document data:", doc.data().username);
+        //     } else {
+        //         console.log("5No such document!");
+        //     }
+        // }).catch(function (error) {
+        //     console.log("Error getting document:", error);
+        // });
+        this.setState({ Post: true });
+        // if (can_post) {
+        //     this.setState({ Post: true });
+        // }
+        // else {
+        //     this.setState({ postQuota: true, time: time });
+        // }
     }
 
-    renderModalPostQuota() {
-        return (
-            <View style={[styles.modalView, { backgroundColor: '#000' }]}>
-                {/* <Text style={{ textAlign: 'center', fontSize: 22, fontWeight: 'bold', color: '#FFF', marginBottom: 25 }}>{this.state.time}</Text>  */}
-                <Timer callback={this.props} time={this.state.time} />
+    // renderModalPostQuota() {
+    //     return (
+    //         <View style={[styles.modalView, { backgroundColor: '#000' }]}>
+    //             {/* <Text style={{ textAlign: 'center', fontSize: 22, fontWeight: 'bold', color: '#FFF', marginBottom: 25 }}>{this.state.time}</Text>  */}
+    //             <Timer callback={this.props} time={this.state.time} />
 
-                <Text style={{ marginHorizontal: 20, fontWeight: 'bold', color: '#FFF', textAlign: 'center', marginTop: 10 }}>You've reached your quota of <Text style={{ color: "#7F171B", fontSize: 18 }}>3</Text> posts per <Text style={{ color: "#7F171B", fontSize: 18 }}>24</Text> hours. Please wait until you unlock next post.</Text>
+    //             <Text style={{ marginHorizontal: 20, fontWeight: 'bold', color: '#FFF', textAlign: 'center', marginTop: 10 }}>You've reached your quota of <Text style={{ color: "#7F171B", fontSize: 18 }}>3</Text> posts per <Text style={{ color: "#7F171B", fontSize: 18 }}>24</Text> hours. Please wait until you unlock next post.</Text>
 
-                <TouchableOpacity style={{ alignSelf: 'flex-end', marginRight: 10, marginTop: 15 }} onPress={() => this.setState({ postQuota: false })}>
-                    <MaterialCommunityIcons name="close-circle" color="#fff" size={25} />
-                </TouchableOpacity>
+    //             <TouchableOpacity style={{ alignSelf: 'flex-end', marginRight: 10, marginTop: 15 }} onPress={() => this.setState({ postQuota: false })}>
+    //                 <MaterialCommunityIcons name="close-circle" color="#fff" size={25} />
+    //             </TouchableOpacity>
 
-            </View >
-        )
-    }
+    //         </View >
+    //     )
+    // }
 
 
     LastPost(user, date) {
@@ -339,6 +406,8 @@ export default class HomeScreen extends React.Component {
                 Date: new Date().toDateString(),
                 Node: "null",
                 Likes: 0,
+                specialPost: this.state.specialPost,
+                audioUrl: this.state.audioUrl
             }).then((data) => {
                 this.setState({ Description: '' })
                 this.setState({ Post: false })
@@ -362,6 +431,24 @@ export default class HomeScreen extends React.Component {
         }
     }
 
+    async playSound(audio) {
+        const sound = new Audio.Sound();
+        // sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
+        await sound.loadAsync({ uri: audio });
+
+
+        await sound.playAsync()
+    }
+
+    // React.useEffect(() => {
+    //     return sound
+    //         ? () => {
+    //             console.log('Unloading Sound');
+    //             sound.unloadAsync();
+    //         }
+    //         : undefined;
+    // }, [sound]);
+
     renderRow = ({ item, index }) => {
         return (
             <View style={{ marginHorizontal: 20, marginVertical: 10, backgroundColor: '#fff', padding: 2, borderRadius: 5 }}>
@@ -375,10 +462,15 @@ export default class HomeScreen extends React.Component {
                             <Ionicons name='ios-trash' color='grey' size={25} />
                         </TouchableOpacity>
                     </View>
+                    {item.audioUrl && (
+                        <TouchableOpacity onPress={() => this.playSound(item.audioUrl)}>
+                            <Ionicons style={{ paddingVertical: 10, marginBottom: -30 }} name='ios-play-circle' color='grey' size={40} />
+                        </TouchableOpacity>
+                    )}
                     <Text style={{ color: 'grey', textAlign: 'right', fontSize: 13, marginVertical: 5 }}>-{item.Name}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                         <View style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}>
-
+                            {item.specialPost && (<Ionicons name='md-star' color='#7F171B' size={20} />)}
                         </View>
                         <Text style={{ color: 'grey', textAlign: 'right', fontSize: 13 }}>{item.Date}</Text>
                     </View>
@@ -394,7 +486,8 @@ export default class HomeScreen extends React.Component {
         return (
             <View style={styles.container}>
                 <Modal
-                    isVisible={this.state.Post || this.state.postQuota}
+                    // isVisible={this.state.Post || this.state.postQuota}
+                    isVisible={this.state.Post}
                     backdropColor="rgba(0,0,0,0.1)"
                     animationIn="zoomInDown"
                     animationOut="zoomOutUp"
@@ -404,8 +497,8 @@ export default class HomeScreen extends React.Component {
                     backdropTransitionOutTiming={600}
                     onBackdropPress={() => this.setState({ Post: false, postQuota: false })}
                     style={{ overflow: 'scroll' }}>
-                    {this.state.postQuota ? this.renderModalPostQuota() : this.renderModalContent()}
-                    {/* {this.renderModalContent()} */}
+                    {/* {this.state.postQuota ? this.renderModalPostQuota() : this.renderModalContent()} */}
+                    {this.renderModalContent()}
                 </Modal>
                 <View style={{ paddingTop: StatusBar.currentHeight, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff' }}>
                     <TouchableOpacity
@@ -485,5 +578,20 @@ const styles = StyleSheet.create({
         marginBottom: 10,
     },
 
+    recording: {
+        width: "80%",
+        backgroundColor: "#fb5b5a",
+        borderRadius: 25,
+        height: 50,
+        marginBottom: 20,
+        // justifyContent: "center",
+        padding: 10,
+        alignItems: 'center',
+        flexDirection: 'row',
+        display: 'flex'
+    },
+    loginText: {
+        color: '#fff'
+    }
 
 });

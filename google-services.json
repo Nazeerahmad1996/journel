@@ -15,6 +15,14 @@
       },
       "oauth_client": [
         {
+          "client_id": "857474040308-5p19fk7fj87r21ab3vhb0cnkackls1dt.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.rumble.journal",
+            "certificate_hash": "f0f580ae9a5fdb7cb6bf470f356d1182e6ac3d0b"
+          }
+        },
+        {
           "client_id": "857474040308-7u9227cl0vqdjqmir3pnndmho9eabnvb.apps.googleusercontent.com",
           "client_type": 3
         }
@@ -32,10 +40,10 @@
               "client_type": 3
             },
             {
-              "client_id": "857474040308-a4hqd3abovaq7ti54db05lh4onmn9nki.apps.googleusercontent.com",
+              "client_id": "857474040308-5v2ll38gr48bmqpc28ro3omvnbse1nnf.apps.googleusercontent.com",
               "client_type": 2,
               "ios_info": {
-                "bundle_id": "host.exp.exponent"
+                "bundle_id": "com.rumble.journal"
               }
             }
           ]

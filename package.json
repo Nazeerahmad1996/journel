@@ -8,12 +8,15 @@
     "eject": "expo eject"
   },
   "dependencies": {
+    "@react-native-community/checkbox": "^0.5.6",
     "@react-native-community/masked-view": "0.1.10",
     "@react-navigation/bottom-tabs": "^5.3.1",
     "@react-navigation/drawer": "^5.7.5",
     "@react-navigation/native": "^5.4.0",
     "@react-navigation/stack": "^5.3.7",
     "expo": "^39.0.0",
+    "expo-app-auth": "~9.2.0",
+    "expo-av": "~8.6.0",
     "expo-constants": "~9.2.0",
     "expo-facebook": "~9.0.0",
     "expo-firebase-recaptcha": "^1.1.0",

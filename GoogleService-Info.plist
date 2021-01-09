@@ -3,21 +3,23 @@
 <plist version="1.0">
 <dict>
 	<key>CLIENT_ID</key>
-	<string>533567482896-iul30b2dt5sdc3q23vrbq2vke3bla2ls.apps.googleusercontent.com</string>
+	<string>857474040308-5v2ll38gr48bmqpc28ro3omvnbse1nnf.apps.googleusercontent.com</string>
 	<key>REVERSED_CLIENT_ID</key>
-	<string>com.googleusercontent.apps.533567482896-iul30b2dt5sdc3q23vrbq2vke3bla2ls</string>
+	<string>com.googleusercontent.apps.857474040308-5v2ll38gr48bmqpc28ro3omvnbse1nnf</string>
+	<key>ANDROID_CLIENT_ID</key>
+	<string>857474040308-33n9vktheee6ggpua9c8abnl8koleipj.apps.googleusercontent.com</string>
 	<key>API_KEY</key>
-	<string>AIzaSyAYE930Yy6GI-JYEAa8q6Qp60WW96iXxBc</string>
+	<string>AIzaSyCdo8_lMEgaNKfhuVMshnJ5YUdaeMj21Bw</string>
 	<key>GCM_SENDER_ID</key>
-	<string>533567482896</string>
+	<string>857474040308</string>
 	<key>PLIST_VERSION</key>
 	<string>1</string>
 	<key>BUNDLE_ID</key>
-	<string>example.expo.googlesignin</string>
+	<string>com.rumble.journal</string>
 	<key>PROJECT_ID</key>
-	<string>auth-226ca</string>
+	<string>tuition-ac131</string>
 	<key>STORAGE_BUCKET</key>
-	<string>auth-226ca.appspot.com</string>
+	<string>tuition-ac131.appspot.com</string>
 	<key>IS_ADS_ENABLED</key>
 	<false></false>
 	<key>IS_ANALYTICS_ENABLED</key>
@@ -29,8 +31,8 @@
 	<key>IS_SIGNIN_ENABLED</key>
 	<true></true>
 	<key>GOOGLE_APP_ID</key>
-	<string>1:533567482896:ios:be5fa28ce362a78a56ee95</string>
+	<string>1:857474040308:ios:96b98fda20bc361adc39a1</string>
 	<key>DATABASE_URL</key>
-	<string>https://auth-226ca.firebaseio.com</string>
+	<string>https://tuition-ac131.firebaseio.com</string>
 </dict>
 </plist>
