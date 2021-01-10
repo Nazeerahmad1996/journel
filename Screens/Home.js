@@ -18,20 +18,24 @@ import { Audio } from 'expo-av';
 
 let uri = null;
 export default class HomeScreen extends React.Component {
+    constructor(props) {
+        super(props);
+        this.state = {
+            logged: false,
+            name: '',
+            Post: false,
+            Description: '',
+            messages: [],
+            postQuota: false,
+            starCount: 3.5,
+            Image: '',
+            specialPost: false,
+            recording: undefined,
+            counter: 0
+        }
 
-    state = {
-        logged: false,
-        name: '',
-        Post: false,
-        Description: '',
-        messages: [],
-        postQuota: false,
-        starCount: 3.5,
-        Image: '',
-        specialPost: false,
-        recording: undefined
+        this.myInterval = null;
     }
-
     onShare = async () => {
         try {
             const result = await Share.share({
@@ -99,6 +103,7 @@ export default class HomeScreen extends React.Component {
 
     startRecording = async () => {
         try {
+            let _this = this
             console.log('Requesting permissions..');
             await Audio.requestPermissionsAsync();
             await Audio.setAudioModeAsync({
@@ -111,6 +116,9 @@ export default class HomeScreen extends React.Component {
             await recording.startAsync();
             uri = recording;
             this.setState({ recording });
+            this.myInterval = setInterval(function () {
+                _this.setState({ counter: _this.state.counter + 1 })
+            }, 1000);
             console.log('Recording started');
         } catch (err) {
             console.error('Failed to start recording', err);
@@ -119,9 +127,10 @@ export default class HomeScreen extends React.Component {
 
     stopRecording = async () => {
         console.log('Stopping recording..');
+        clearInterval(this.myInterval)
         await uri.stopAndUnloadAsync();
         const uri1 = uri.getURI();
-        this.setState({ recording: undefined });
+        this.setState({ recording: undefined, counter: 0 });
         const blob = await new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
             xhr.onload = function () {
@@ -140,7 +149,7 @@ export default class HomeScreen extends React.Component {
 
         const snapshot = await reference.put(blob);
         const myUrl = await snapshot.ref.getDownloadURL();
-        this.setState({ audioUrl: myUrl })
+        this.setState({ audioUrl: myUrl, uploaded: true })
     }
 
     renderModalContent = () => (
@@ -153,18 +162,30 @@ export default class HomeScreen extends React.Component {
                     placeholder="Description..."
                     placeholderTextColor="#fff"
                     onChangeText={text => this.setState({ Description: text })} />
+                {this.state.uploaded ? (
+                    <Ionicons name="ios-checkmark" color="#fff" size={35} />
+                ) : (
+                        <TouchableOpacity onPress={() => this.state.recording ? this.stopRecording() : this.startRecording()} style={{ backgroundColor: '#fff', paddingHorizontal: 11, paddingVertical: 2, borderRadius: 40, marginLeft: 10 }}>
+                            {!this.state.recording ?
+                                <Ionicons name="ios-mic" color="#773838" size={27} />
+                                :
+                                <Text style={{ color: '#773838', fontSize: 18 }}>{this.state.counter}</Text>
+                            }
+                        </TouchableOpacity>
+                    )}
+
                 <TouchableOpacity onPress={this._pickImage} style={{ backgroundColor: '#fff', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 40, marginLeft: 10 }}>
                     <Ionicons name="md-image" color="#773838" size={27} />
                 </TouchableOpacity>
             </View>
 
 
-            <View >
+            {/* <View >
                 <TouchableOpacity style={styles.recording} onPress={() => this.state.recording ? this.stopRecording() : this.startRecording()}>
-                    <Text style={{ flex: 1, color: '#fff' }}>{this.state.recording ? 'Stop Recording...' : 'Start Recording...'}</Text>
+                    <Text style={{ flex: 1, color: '#fff' }}>{this.state.recording ? this.state.counter : 'Start Recording...'}</Text>
                     <Ionicons style={{ marginRight: 15 }} name="ios-mic" color="#fff" size={27} />
                 </TouchableOpacity>
-            </View>
+            </View> */}
 
 
             <StarRating
@@ -194,7 +215,7 @@ export default class HomeScreen extends React.Component {
                 <Text style={{ fontSize: 17, textAlign: 'center' }}>Cancel</Text>
             </TouchableOpacity>
 
-        </View>
+        </View >
     );
 
 
@@ -215,7 +236,7 @@ export default class HomeScreen extends React.Component {
 
         const backHandler = BackHandler.addEventListener('hardwareBackPress', this.backAction);
 
-        backHandler.remove();
+        // backHandler.remove();
         let userName = firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName : ''
 
         const identifier = await Notifications.scheduleNotificationAsync({
@@ -409,7 +430,7 @@ export default class HomeScreen extends React.Component {
                 specialPost: this.state.specialPost,
                 audioUrl: this.state.audioUrl
             }).then((data) => {
-                this.setState({ Description: '' })
+                this.setState({ Description: '', counter: 0, uploaded: false })
                 this.setState({ Post: false })
                 Alert.alert(
                     'Upload Successfully'
@@ -553,7 +574,7 @@ const styles = StyleSheet.create({
         alignItems: 'center'
     },
     inputView: {
-        width: "80%",
+        width: "90%",
         backgroundColor: "#fb5b5a",
         borderRadius: 25,
         height: 50,

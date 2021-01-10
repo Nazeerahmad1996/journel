@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, SafeAreaView, Text } from 'react-native';
+import { StyleSheet, SafeAreaView, ActivityIndicator } from 'react-native';
 import * as firebase from 'firebase';
 import '@firebase/firestore'
 import StackNavigator from './navigation/Stack'
@@ -59,7 +59,7 @@ export default class App extends React.Component {
         {this.state.fontLoaded ? (
           <StackNavigator />
         ) : (
-            <Text>Font not Loaded</Text>
+            <ActivityIndicator size="large" color="#fb5b5a" />
           )}
 
       </SafeAreaView>

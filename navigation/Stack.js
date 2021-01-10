@@ -4,6 +4,7 @@ import Register from '../Screens/Register';
 import DrawerNavigation from './DrawerNavigation';
 import PhoneLogin from '../Screens/PhoneLogin';
 import UsernameUpdate from '../Screens/UsernameUpdate';
+
 import * as firebase from 'firebase';
 
 

@@ -1,8 +1,9 @@
 import React from 'react';
-import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Image, ActivityIndicator } from 'react-native';
+import { StyleSheet, Text, View, TextInput, TouchableOpacity, Alert, Image, StatusBar } from 'react-native';
 import { firebase } from '@firebase/app';
 import '@firebase/firestore'
 
+import { Ionicons, MaterialCommunityIcons } from '@expo/vector-icons';
 
 // const recaptchaVerifier = React.useRef(null);
 
@@ -18,29 +19,29 @@ export default class App extends React.Component {
 
 
     componentDidMount = async () => {
-        let checkAuth = false
-        var user = firebase.auth().currentUser.uid;
-        const db = firebase.firestore();
-        await db.collection("Users").doc(user).get().then(function (doc) {
-            let that = this
-            if (doc.exists) {
-                let username = doc.data().username
-                if (username) {
-                    checkAuth = true;
-                    this.setState({ check: true })
-                } else {
-                    this.setState({ check: 'false' })
-                    console.log("No such document!222");
-                }
-            } else {
-                console.log("No such document!");
-            }
-        }).catch(function (error) {
-            console.log("Error getting document:", error);
-        });
-        if (checkAuth) {
-            this.props.navigation.navigate('DrawerNavigation')
-        }
+        // let checkAuth = false
+        // var user = firebase.auth().currentUser.uid;
+        // const db = firebase.firestore();
+        // await db.collection("Users").doc(user).get().then(function (doc) {
+        //     let that = this
+        //     if (doc.exists) {
+        //         let username = doc.data().username
+        //         if (username) {
+        //             checkAuth = true;
+        //             this.setState({ check: true })
+        //         } else {
+        //             this.setState({ check: 'false' })
+        //             console.log("No such document!222");
+        //         }
+        //     } else {
+        //         console.log("No such document!");
+        //     }
+        // }).catch(function (error) {
+        //     console.log("Error getting document:", error);
+        // });
+        // if (checkAuth) {
+        //     this.props.navigation.navigate('DrawerNavigation')
+        // }
     }
 
 
@@ -48,7 +49,6 @@ export default class App extends React.Component {
 
 
     Update = async () => {
-        this.setState({ check: false })
         if (this.state.username !== null && this.state.username !== '') {
             console.log('worked')
             const db = firebase.firestore();
@@ -68,16 +68,29 @@ export default class App extends React.Component {
                     console.log("Error getting documents: ", error);
                 });
 
-            if (!this.state.check) {
+            let _this = this
+            var user = firebase.auth().currentUser;
+
+            user.updateProfile({
+                displayName: _this.state.username
+            }).then(function () {
                 var userId = firebase.auth().currentUser.uid
-                const db = firebase.firestore();
 
                 db.collection("Users").doc(userId).set({
-                    username: this.state.username
+                    username: _this.state.username
                 }, { merge: true }).then((data) => {
-                    this.props.navigation.navigate('DrawerNavigation')
+                    _this.props.navigation.navigate('Home')
                 });
-            }
+            }).catch(function (error) {
+                console.log(error);
+            });
+
+
+            // user.updatePassword(newPassword).then(function () {
+            //     // Update successful.
+            // }).catch(function (error) {
+            //     // An error happened.
+            // });
         }
     }
 
@@ -86,38 +99,38 @@ export default class App extends React.Component {
 
 
     render() {
-        if (this.state.check == 'false') {
-            return (
-                <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <View style={styles.modalView}>
-
-
-                        <Image style={{ height: 150, width: 150, borderRadius: 100 }} source={require('../assets/RUMBLECAPITAL.png')} />
-
-                        <View style={styles.inputView} >
-                            <TextInput
-                                style={styles.inputText}
-                                placeholder="Username"
-                                placeholderTextColor="#fff"
-                                onChangeText={text => this.setState({ username: text }, () => {
-                                    console.log(this.state.username)
-                                })} />
-                        </View>
-
-                        <TouchableOpacity onPress={() => this.Update()} style={styles.forgotBtn}>
-                            <Text style={styles.loginText}>Update</Text>
-                        </TouchableOpacity>
-
-                    </View >
+        return (
+            <View style={{ flex: 1, justifyContent: 'center' }}>
+                <View style={{ paddingTop: StatusBar.currentHeight, flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', position: 'absolute', top: 0 }}>
+                    <TouchableOpacity
+                        onPress={() => this.props.navigation.openDrawer()}
+                        style={{ padding: 8, width: 60, height: 50, justifyContent: 'center', alignItems: 'center' }}>
+                        <Ionicons name='md-menu' color='#7F171B' size={35} />
+                    </TouchableOpacity>
+                    <Text style={{ flex: 1, textAlign: 'center', fontSize: 17, fontWeight: 'bold', marginLeft: -40 }}>Update</Text>
                 </View>
-            );
-        } else {
-            return (
-                <View style={{ flex: 1, justifyContent: 'center' }}>
-                    <ActivityIndicator size="large" color="#fb5b5a" />
-                </View>
-            )
-        }
+                <View style={styles.modalView}>
+
+
+                    <Image style={{ height: 150, width: 150, borderRadius: 100 }} source={require('../assets/RUMBLECAPITAL.png')} />
+
+                    <View style={styles.inputView} >
+                        <TextInput
+                            style={styles.inputText}
+                            placeholder="Username"
+                            placeholderTextColor="#fff"
+                            onChangeText={text => this.setState({ username: text }, () => {
+                                console.log(this.state.username)
+                            })} />
+                    </View>
+
+                    <TouchableOpacity onPress={() => this.Update()} style={styles.forgotBtn}>
+                        <Text style={styles.loginText}>Update</Text>
+                    </TouchableOpacity>
+
+                </View >
+            </View>
+        );
     }
 }
 

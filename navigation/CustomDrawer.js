@@ -115,6 +115,17 @@ export default function CustomDrawer(props) {
                         </TouchableOpacity>
 
                         <TouchableOpacity
+                            onPress={() => props.navigation.navigate('updateUsername')}
+                            style={styles.Row}>
+                            <View style={styles.IconContainer}>
+                                <MaterialCommunityIcons name="pencil" size={28} />
+                            </View>
+                            <View style={{ flex: 1 }}>
+                                <Text style={styles.rowTitleName}>Update Username</Text>
+                            </View>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity
                             onPress={() => DeleteAccount()}
                             style={styles.Row}>
                             <View style={styles.IconContainer}>

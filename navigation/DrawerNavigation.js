@@ -3,6 +3,8 @@ import { Button, View } from 'react-native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { NavigationContainer } from '@react-navigation/native';
 import Home from '../Screens/Home';
+import updateUsername from '../Screens/updateUsername';
+
 import analytics from '../Screens/analytics';
 
 import CustomDrawer from './CustomDrawer'
@@ -18,7 +20,7 @@ export default function App() {
             drawerStyle={{ width: '85%' }}
             drawerContent={(props) => <CustomDrawer {...props} />}>
             <Drawer.Screen name="Home" component={Home} />
-            {/* <Drawer.Screen name="LeaderBoard" component={LeaderBoard} /> */}
+            <Drawer.Screen name="updateUsername" component={updateUsername} />
             <Drawer.Screen name="analytics" component={analytics} />
         </Drawer.Navigator>
     );
