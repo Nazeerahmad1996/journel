@@ -57,8 +57,7 @@ export default function CustomDrawer(props) {
         var ref = firebase
             .database()
             .ref('Post').orderByChild('User').equalTo(uid);
-        ref.once("value")
-            .then(function (snapshot) {
+        ref.on("value", snapshot => {
                 var a = snapshot.numChildren(); // 1 ("name")
                 setPost(a)
             });

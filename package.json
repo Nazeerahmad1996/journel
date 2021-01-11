@@ -37,10 +37,12 @@
     "react-native-reanimated": "~1.13.0",
     "react-native-safe-area-context": "3.1.4",
     "react-native-screens": "~2.10.1",
+    "react-native-sound-player": "^0.10.5",
     "react-native-star-rating": "^1.1.0",
     "react-native-stopwatch-timer": "^0.0.21",
     "react-native-svg": "^12.1.0",
     "react-native-svg-charts": "^5.4.0",
+    "react-native-track-player": "^1.2.3",
     "react-native-web": "~0.13.7",
     "react-native-webview": "10.7.0"
   },

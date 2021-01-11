@@ -15,6 +15,12 @@ import * as ImagePicker from 'expo-image-picker';
 import StarRating from 'react-native-star-rating';
 import CheckBox from '@react-native-community/checkbox';
 import { Audio } from 'expo-av';
+
+import SoundPlayer from 'react-native-sound-player'
+
+// import TrackPlayer from 'react-native-track-player';
+
+
 LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
 LogBox.ignoreAllLogs();//Ignore all log notifications
 let uri = null;
@@ -32,7 +38,11 @@ export default class HomeScreen extends React.Component {
             Image: '',
             specialPost: false,
             recording: undefined,
-            counter: 0
+            counter: 0,
+            isPlaying: false,
+            playbackInstance: null,
+            volume: 1.0,
+            isBuffering: false
         }
 
         this.myInterval = null;
@@ -166,7 +176,7 @@ export default class HomeScreen extends React.Component {
                 {this.state.uploaded ? (
                     <Ionicons name="ios-checkmark" color="#fff" size={35} />
                 ) : (
-                        <TouchableOpacity onPress={() => this.state.recording ? this.stopRecording() : this.startRecording()} style={{ backgroundColor: '#fff', paddingHorizontal: 11, paddingVertical: 2, borderRadius: 40, marginLeft: 10 }}>
+                        <TouchableOpacity onPress={() => this.startRecording()} style={{ backgroundColor: '#fff', paddingHorizontal: 11, paddingVertical: 2, borderRadius: 40, marginLeft: 10 }}>
                             {!this.state.recording ?
                                 <Ionicons name="ios-mic" color="#773838" size={27} />
                                 :
@@ -239,6 +249,26 @@ export default class HomeScreen extends React.Component {
 
         // backHandler.remove();
         let userName = firebase.auth().currentUser.displayName ? firebase.auth().currentUser.displayName : ''
+
+
+
+        try {
+            await Audio.setAudioModeAsync({
+                allowsRecordingIOS: false,
+                interruptionModeIOS: Audio.INTERRUPTION_MODE_IOS_DO_NOT_MIX,
+                playsInSilentModeIOS: true,
+                interruptionModeAndroid: Audio.INTERRUPTION_MODE_ANDROID_DUCK_OTHERS,
+                shouldDuckAndroid: true,
+                staysActiveInBackground: true,
+                playThroughEarpieceAndroid: true
+            })
+
+            this.playSound()
+        } catch (e) {
+            console.log(e)
+        }
+
+
 
         const identifier = await Notifications.scheduleNotificationAsync({
             content: {
@@ -397,6 +427,40 @@ export default class HomeScreen extends React.Component {
     }
 
     Post = async () => {
+        let myUrl;
+        if (this.state.recording) {
+            console.log('Stopping recording..');
+            clearInterval(this.myInterval)
+            await uri.stopAndUnloadAsync();
+            const uri1 = uri.getURI();
+            this.setState({ recording: undefined, counter: 0 });
+            const blob = await new Promise((resolve, reject) => {
+                const xhr = new XMLHttpRequest();
+                xhr.onload = function () {
+                    resolve(xhr.response);
+                };
+                xhr.onerror = function (e) {
+                    reject(new TypeError("Network request failed"));
+                };
+                xhr.responseType = "blob";
+                xhr.open("GET", uri1, true);
+                xhr.send(null);
+            });
+            const myRef = firebase.database().ref();
+            const Key = myRef.push();
+            const reference = firebase.storage().ref().child('audio/' + Key);
+
+            const snapshot = await reference.put(blob);
+            myUrl = await snapshot.ref.getDownloadURL();
+            this.setState({ recording: undefined, uploaded: true })
+        }
+
+
+
+
+
+
+
         var user = firebase.auth().currentUser.uid;
 
         let userName;
@@ -429,7 +493,7 @@ export default class HomeScreen extends React.Component {
                 Node: "null",
                 Likes: 0,
                 specialPost: this.state.specialPost,
-                audioUrl: this.state.audioUrl ? this.state.audioUrl : false
+                audioUrl: myUrl ? myUrl : false
             }).then((data) => {
                 this.setState({ Description: '', counter: 0, uploaded: false })
                 this.setState({ Post: false })
@@ -454,12 +518,38 @@ export default class HomeScreen extends React.Component {
     }
 
     async playSound(audio) {
+        const { isPlaying, volume } = this.state
         const sound = new Audio.Sound();
+
+        const status = {
+            shouldPlay: isPlaying,
+            volume
+        }
+
+        sound.setOnPlaybackStatusUpdate(this.onPlaybackStatusUpdate)
         // sound.setOnPlaybackStatusUpdate(onPlaybackStatusUpdate);
-        await sound.loadAsync({ uri: audio });
 
 
-        await sound.playAsync()
+        await sound.loadAsync({ uri: audio }, status, false);
+        isPlaying ? await sound.pauseAsync() : await sound.playAsync()
+        // await sound.playAsync()
+        this.setState({ isPlaying: !isPlaying })
+
+    }
+
+
+    onPlaybackStatusUpdate = status => {
+        this.setState({
+            isBuffering: status.isBuffering
+        })
+    }
+
+
+    handlePlayPause = async (audio, index) => {
+        this.setState({
+            index
+        })
+        await this.playSound(audio)
     }
 
     renderRow = ({ item, index }) => {
@@ -476,8 +566,12 @@ export default class HomeScreen extends React.Component {
                         </TouchableOpacity>
                     </View>
                     {item.audioUrl && (
-                        <TouchableOpacity onPress={() => this.playSound(item.audioUrl)}>
-                            <Ionicons style={{ paddingVertical: 10}} name='ios-play-circle' color='grey' size={40} />
+                        <TouchableOpacity onPress={() => this.handlePlayPause(item.audioUrl, index)}>
+                            {this.state.isPlaying && index == this.state.index ? (
+                                <Ionicons style={{ paddingVertical: 10 }} name='ios-pause' size={40} color='grey' />
+                            ) : (
+                                    <Ionicons style={{ paddingVertical: 10 }} name='ios-play-circle' color='grey' size={40} />
+                                )}
                         </TouchableOpacity>
                     )}
                     <Text style={{ color: 'grey', textAlign: 'right', fontSize: 13, marginVertical: 5 }}>-{item.Name}</Text>
