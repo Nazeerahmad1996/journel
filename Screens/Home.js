@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Alert, TextInput, Dimensions, StyleSheet, Text, TouchableOpacity, Share, View, BackHandler, FlatList, StatusBar, Image, Button } from 'react-native';
+import { Alert, TextInput, Dimensions, StyleSheet, Text, TouchableOpacity, Share, View, BackHandler, FlatList, StatusBar, Image, LogBox } from 'react-native';
 import { ScrollView } from 'react-native-gesture-handler';
 import * as Linking from 'expo-linking';
 import Modal from 'react-native-modal';
@@ -15,7 +15,8 @@ import * as ImagePicker from 'expo-image-picker';
 import StarRating from 'react-native-star-rating';
 import CheckBox from '@react-native-community/checkbox';
 import { Audio } from 'expo-av';
-
+LogBox.ignoreLogs(['Warning: ...']); // Ignore log notification by message
+LogBox.ignoreAllLogs();//Ignore all log notifications
 let uri = null;
 export default class HomeScreen extends React.Component {
     constructor(props) {
@@ -428,7 +429,7 @@ export default class HomeScreen extends React.Component {
                 Node: "null",
                 Likes: 0,
                 specialPost: this.state.specialPost,
-                audioUrl: this.state.audioUrl
+                audioUrl: this.state.audioUrl ? this.state.audioUrl : false
             }).then((data) => {
                 this.setState({ Description: '', counter: 0, uploaded: false })
                 this.setState({ Post: false })
@@ -461,15 +462,6 @@ export default class HomeScreen extends React.Component {
         await sound.playAsync()
     }
 
-    // React.useEffect(() => {
-    //     return sound
-    //         ? () => {
-    //             console.log('Unloading Sound');
-    //             sound.unloadAsync();
-    //         }
-    //         : undefined;
-    // }, [sound]);
-
     renderRow = ({ item, index }) => {
         return (
             <View style={{ marginHorizontal: 20, marginVertical: 10, backgroundColor: '#fff', padding: 2, borderRadius: 5 }}>
@@ -485,7 +477,7 @@ export default class HomeScreen extends React.Component {
                     </View>
                     {item.audioUrl && (
                         <TouchableOpacity onPress={() => this.playSound(item.audioUrl)}>
-                            <Ionicons style={{ paddingVertical: 10, marginBottom: -30 }} name='ios-play-circle' color='grey' size={40} />
+                            <Ionicons style={{ paddingVertical: 10}} name='ios-play-circle' color='grey' size={40} />
                         </TouchableOpacity>
                     )}
                     <Text style={{ color: 'grey', textAlign: 'right', fontSize: 13, marginVertical: 5 }}>-{item.Name}</Text>
