@@ -44,23 +44,29 @@ export default function CustomDrawer(props) {
 
     // Similar to componentDidMount and componentDidUpdate:
     useEffect(() => {
-        firebase.auth().onAuthStateChanged((user) => {
-            if (user != null) {
-                if (user.displayName != null) {
-                    setname(user.displayName)
-                } else {
-                    setname(user.email)
-                }
+        // firebase.auth().onAuthStateChanged((user) => {
+        //     if (user != null) {
+        //         if (user.displayName != null) {
+        //             setname(user.displayName)
+        //         } else {
+        //             setname(user.email)
+        //         }
+        //     }
+        // })
+        let uid = firebase.auth().currentUser.uid
+        var docRef = firebase.firestore().collection("Users").doc(uid);
+        docRef.onSnapshot(function (doc) {
+            if (doc.exists) {
+                setname(doc.data().username)
             }
         })
-        let uid = firebase.auth().currentUser.uid
         var ref = firebase
             .database()
             .ref('Post').orderByChild('User').equalTo(uid);
         ref.on("value", snapshot => {
-                var a = snapshot.numChildren(); // 1 ("name")
-                setPost(a)
-            });
+            var a = snapshot.numChildren(); // 1 ("name")
+            setPost(a)
+        });
     }, []);
     return (
         <View style={styles.container}>

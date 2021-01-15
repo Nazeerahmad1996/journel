@@ -47,8 +47,8 @@ export default class App extends React.Component {
 
 
 
-
     Update = async () => {
+        this.setState({ check: false })
         if (this.state.username !== null && this.state.username !== '') {
             console.log('worked')
             const db = firebase.firestore();
@@ -68,31 +68,65 @@ export default class App extends React.Component {
                     console.log("Error getting documents: ", error);
                 });
 
-            let _this = this
-            var user = firebase.auth().currentUser;
-
-            user.updateProfile({
-                displayName: _this.state.username
-            }).then(function () {
+            if (!this.state.check) {
                 var userId = firebase.auth().currentUser.uid
+                const db = firebase.firestore();
 
                 db.collection("Users").doc(userId).set({
-                    username: _this.state.username
+                    username: this.state.username
                 }, { merge: true }).then((data) => {
-                    _this.props.navigation.navigate('Home')
+                    alert('Updated')
                 });
-            }).catch(function (error) {
-                console.log(error);
-            });
-
-
-            // user.updatePassword(newPassword).then(function () {
-            //     // Update successful.
-            // }).catch(function (error) {
-            //     // An error happened.
-            // });
+            }
         }
     }
+
+
+    // Update = async () => {
+    //     if (this.state.username !== null && this.state.username !== '') {
+    //         console.log('worked')
+    //         const db = firebase.firestore();
+    //         let that = this
+    //         await db.collection("Users").where('username', '==', this.state.username)
+    //             .get()
+    //             .then(function (querySnapshot) {
+    //                 querySnapshot.forEach(function (doc) {
+    //                     // doc.data() is never undefined for query doc snapshots
+    //                     console.log(doc.id, " => ", doc.data());
+    //                     that.setState({ check: true })
+    //                     Alert.alert('Already Taken')
+    //                     return;
+    //                 });
+    //             })
+    //             .catch(function (error) {
+    //                 console.log("Error getting documents: ", error);
+    //             });
+
+    //         let _this = this
+    //         var user = firebase.auth().currentUser;
+
+    //         user.updateProfile({
+    //             displayName: _this.state.username
+    //         }).then(function () {
+    //             var userId = firebase.auth().currentUser.uid
+
+    //             db.collection("Users").doc(userId).set({
+    //                 username: _this.state.username
+    //             }, { merge: true }).then((data) => {
+    //                 _this.props.navigation.navigate('Home')
+    //             });
+    //         }).catch(function (error) {
+    //             console.log(error);
+    //         });
+
+
+    //         // user.updatePassword(newPassword).then(function () {
+    //         //     // Update successful.
+    //         // }).catch(function (error) {
+    //         //     // An error happened.
+    //         // });
+    //     }
+    // }
 
 
 
