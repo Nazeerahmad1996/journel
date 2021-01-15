@@ -299,7 +299,7 @@ export default class HomeScreen extends React.Component {
                     Node: Key
                 })
                 let _this = this
-                setTimeout(function () { _this.setState({ sucess: false }) }, 1500)
+                setTimeout(function () { _this.setState({ sucess: false }) }, 2500)
                 // this.LastPost(user, date);
 
             }).catch((error) => {
